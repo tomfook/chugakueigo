@@ -114,6 +114,9 @@ shinyServer(function(input, output){
 				score.global <<- read.csv("score.csv")
 				score.global[[input$select.user]] <<- qa$score.all
 				write.table(score.global, "score.csv", row.names=FALSE, sep = ",")
+				score.global <<- score.global %>%
+										mutate(guest = 0L) %>%
+										select(guest, everything())
 			}else{ 
 				showNotification("You switched user account.")
 			}
