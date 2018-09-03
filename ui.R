@@ -5,15 +5,17 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("select.user", "select your name", choices = c("guest"), selected = "guest"),
-      actionButton("action.start", "Start Learning"), 
+      actionButton("action.start", label = "Start Learning"), 
       actionButton("action.save", label = "Save Score"),
       p(), 
       textOutput("welcome"),
       p(),
       helpText("----How to use----"),
       helpText("1. Select username and Start"),
-      helpText("2. On the main tab, see Japanese sentence and translate"),
-      helpText("3. If you could do instantly, push 'OK'. Otherwise 'NG'")
+      helpText("2. On the main tab, see Japanese sentence and translate it."),
+      helpText("3. If you could do instantly, push 'OK'. Otherwise 'NG'"),
+      helpText("4. Repeat 2 and 3."),
+      helpText("5. When you finish learning, save your score by the button.")
     ),
     mainPanel(
       tabsetPanel(type = "tabs",
@@ -36,7 +38,7 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
-          numericInput("prob.base", label = h4("bias to your weakness(1 means unbiased)"), value = 1.7, step = 0.1, min = 1)
+          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = 1.7, step = 0.1, min = 1)
         ),
         tabPanel("questions",
           h3("Questions"),
@@ -49,9 +51,12 @@ shinyUI(fluidPage(
         ),
         tabPanel("history", 
           h3("History"), 
-          helpText("v0.1 launch(2018-08-28)"),
-          helpText("v0.1.1 small layout change and bug fixes(2018-08-29)"),
-          helpText("v0.1.2 craete data folder, dynamic selection, modify variable names, automatic gap filling between score and questions and replace all tabs to spaces(2018-08-30)")
+	  HTML("
+	    v0.1 launch(2018-08-28)<br>
+            v0.1.1 small layout change and bug fixes(2018-08-29)<br>
+            v0.1.2 craete data folder, dynamic selection, modify variable names, automatic gap filling between score and questions and replace all tabs to spaces(2018-08-30) <br>
+	    v0.1.3 bug fixes(2018-09-03)
+          ")
         )
       )
     )
