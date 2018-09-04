@@ -70,7 +70,7 @@ shinyServer(function(input, output, session){
     a <- sample(
       range.max - range.min + 1L,
       1,
-      prob = input$prob.base^(-qa$score[seq(range.min, range.max)])
+      prob = input$prob.base^(-qa$score[seq(range.min, range.max)]) * (cumsum(qa$score[seq(range.min, range.max)] == 0L) <= input$zeronum)
     ) + (range.min - 1L)
     qa$index <- a
     qa$question <- main$question[a]
@@ -157,7 +157,7 @@ shinyServer(function(input, output, session){
 #data table
   output$dt.questions <- DT::renderDataTable({
     main %>%
-      mutate(score = qa$score.all[[input$select.user]]) %>%
+      mutate(score = qa$score) %>%
       select(question, answer, score)
   }) 
 })

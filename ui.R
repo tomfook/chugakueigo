@@ -38,6 +38,7 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
+	  numericInput("zeronum", label = h4("step-by-step mode"), value = 5, step = 1, min = 1),
           numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = 1.7, step = 0.1, min = 1)
         ),
         tabPanel("questions",
@@ -55,7 +56,8 @@ shinyUI(fluidPage(
 	    v0.1 launch(2018-08-28)<br>
             v0.1.1 small layout change and bug fixes(2018-08-29)<br>
             v0.1.2 craete data folder, dynamic selection, modify variable names, automatic gap filling between score and questions and replace all tabs to spaces(2018-08-30) <br>
-	    v0.1.3 bug fixes(2018-09-03)
+	    v0.1.3 bug fixes(2018-09-03)<br>
+	    v0.1.4 step-by-step mode(2018-09-04)
           ")
         )
       )
