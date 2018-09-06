@@ -45,7 +45,7 @@ shinyServer(function(input, output, session){
       showNotification(paste("User", input$textinp.useradd, "was added."))
       updateTextInput(session, "textinp.useradd", value = "")
     }else{
-      showNotification("Your name is resistered.")
+      showNotification("Your name has been already resistered.")
     }
   })
 
@@ -56,22 +56,23 @@ shinyServer(function(input, output, session){
     qa$user <- input$select.user
     qa$score <- qa$score.all[[input$select.user]]
     qa$index <- NULL
+    qa$question <- ""
+    qa$answer <- ""
   }) 
 
 #learning
+  observe({
+    qa$range.min <- if_else(is.null(input$slider.qrange[1]), 1L, input$slider.qrange[1])
+    qa$range.max <- if_else(is.null(input$slider.qrange[2]), nrow(main), input$slider.qrange[2]) 
+    qa$prob <- input$prob.base^(-qa$score[seq(qa$range.min, qa$range.max)]) *
+      (cumsum(qa$score[seq(qa$range.min, qa$range.max)] == 0L) <= input$zeronum)
+  })
   newQuestion <- function(){
-    if(!is.null(input$slider.qrange[1])){
-      range.min <- input$slider.qrange[1]
-      range.max <- input$slider.qrange[2]
-    }else{
-      range.min <- 1L
-      range.max <- nrow(main)
-    }
     a <- sample(
-      range.max - range.min + 1L,
+      qa$range.max - qa$range.min + 1L,
       1,
-      prob = input$prob.base^(-qa$score[seq(range.min, range.max)]) * (cumsum(qa$score[seq(range.min, range.max)] == 0L) <= input$zeronum)
-    ) + (range.min - 1L)
+      prob = qa$prob
+    ) + (qa$range.min - 1L)
     qa$index <- a
     qa$question <- main$question[a]
     qa$answer.remember <- main$answer[a]
@@ -115,7 +116,6 @@ shinyServer(function(input, output, session){
 #save score
   observeEvent(input$action.save,{ 
     if(qa$user == input$select.user){
-      #qa$score.all <- read.csv("data/score.csv")
       qa$score.all <- read.score(qa = main, path = "data/score.csv")
       qa$score.all[[input$select.user]] <- qa$score
       write.table(qa$score.all, "data/score.csv", row.names=FALSE, sep = ",")
@@ -154,7 +154,7 @@ shinyServer(function(input, output, session){
       head(5)
   }) 
 
-#data table
+#questions
   output$dt.questions <- DT::renderDataTable({
     main %>%
       mutate(score = qa$score) %>%
