@@ -57,7 +57,8 @@ shinyUI(fluidPage(
             v0.1.1 small layout change and bug fixes(2018-08-29)<br>
             v0.1.2 craete data folder, dynamic selection, modify variable names, automatic gap filling between score and questions and replace all tabs to spaces(2018-08-30) <br>
 	    v0.1.3 bug fixes(2018-09-03)<br>
-	    v0.1.4 step-by-step mode(2018-09-04)
+	    v0.1.4 step-by-step mode(2018-09-04)<br>
+	    v0.1.5 lightweight(2018-09-06)
           ")
         )
       )
