@@ -38,7 +38,7 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
-	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = 10, step = 1, min = 1),
+	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = 5, step = 1, min = 1),
           numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = 1.7, step = 0.1, min = 1)
         ),
         tabPanel("questions",
