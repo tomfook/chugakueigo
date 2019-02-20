@@ -31,6 +31,22 @@ shinyServer(function(input, output, session){
   output$html.slider.qrange <- renderUI({ 
     sliderInput("slider.qrange", label = h4("Range of Question"), min = 1L, max = nrow(main), value = c(0,nrow(main)))
   }) 
+  output$html.action.start <- renderUI({ 
+    actionButton("action.start", label = "Start Learning",
+      style = if_else(qa$start, 
+	 "color:gray;",
+         "color:black;"
+      ) 
+)
+  })
+  output$html.action.save <- renderUI({ 
+    actionButton("action.save", label = "Save Score",
+      style = if_else(identical(qa$score.all[[input$select.user]], qa$score),
+        "color:gray;",
+	"color:black;"
+	) 
+      )
+  })
 
 # user selection update
   observe({
@@ -52,6 +68,7 @@ shinyServer(function(input, output, session){
 #user account
   observeEvent(input$select.user,{
     qa$trial <- 0L
+    qa$ok <- 0L
     qa$start <- FALSE
     qa$user <- input$select.user
     qa$score <- qa$score.all[[input$select.user]]
@@ -81,6 +98,7 @@ shinyServer(function(input, output, session){
   } 
   observeEvent(input$action.start,{ 
     qa$trial <- 0L
+    qa$ok <- 0L
     qa$start <- TRUE
     newQuestion()
   })
@@ -91,6 +109,7 @@ shinyServer(function(input, output, session){
     if(qa$start){
       if(qa$answer != ""){
         qa$score[qa$index] <- qa$score[qa$index] + 1L
+	qa$ok <- qa$ok + 1L
         newQuestion()
       }else if(qa$answer == ""){
         showNotification("Confirm Answer!")
@@ -137,7 +156,10 @@ shinyServer(function(input, output, session){
         qa$trial %% 10 == 3 ~ "rd",
         TRUE ~ "th"
       ) 
-      paste0(input$select.user, "'s ", qa$trial, trial.prefix, " Trial")
+      paste0(
+       input$select.user, "'s ", qa$trial, trial.prefix, " Trial",
+       ", (OK: ", qa$ok, ")"
+       )
     }else{
       paste("Not started. Push the start button")
     }
