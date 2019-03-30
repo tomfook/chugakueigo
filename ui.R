@@ -13,7 +13,7 @@ shinyUI(fluidPage(
       helpText("----How to use----"),
       helpText("1. Select username and Start"),
       helpText("2. On the main tab, see Japanese sentence and translate it."),
-      helpText("3. If you could do instantly, push 'OK'. Otherwise 'NG'"),
+      helpText("3. If you could do instantly, press 'OK'. Otherwise 'NG'"),
       helpText("4. Repeat 2 and 3."),
       helpText("5. When you finish learning, save your score by the button.")
     ),
