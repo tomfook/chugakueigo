@@ -15,7 +15,8 @@ read.score <- function(qa, path = "data/score.csv"){
 
 shinyServer(function(input, output, session){ 
 #external data
-  main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE)
+  main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE) %>%
+    filter(question != "", answer != "")
 
   score.global <- read.score(qa = main, path = "data/score.csv") %>%
     mutate(guest = 0L) %>%
@@ -161,7 +162,7 @@ shinyServer(function(input, output, session){
        ", (OK: ", qa$ok, ")"
        )
     }else{
-      paste("Not started. Push the start button")
+      paste("Not started. Press the start button")
     }
   })
 
