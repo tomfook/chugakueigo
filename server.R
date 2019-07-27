@@ -82,7 +82,7 @@ shinyServer(function(input, output, session){
   observe({
     qa$range.min <- if_else(is.null(input$slider.qrange[1]), 1L, input$slider.qrange[1])
     qa$range.max <- if_else(is.null(input$slider.qrange[2]), nrow(main), input$slider.qrange[2]) 
-    qa$prob <- input$prob.base^(-qa$score[seq(qa$range.min, qa$range.max)]) *
+    qa$prob <- (abs(input$prob.base - qa$ok * 0.005 - 1) + 1)^(-qa$score[seq(qa$range.min, qa$range.max)]) *
       (cumsum(qa$score[seq(qa$range.min, qa$range.max)] == 0L) <= input$zeronum)
   })
   newQuestion <- function(){
