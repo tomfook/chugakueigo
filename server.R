@@ -30,7 +30,12 @@ shinyServer(function(input, output, session){
 
 #render UI
   output$html.slider.qrange <- renderUI({ 
-    sliderInput("slider.qrange", label = h4("Range of Question"), min = 1L, max = nrow(main), value = c(0,nrow(main)))
+    sliderInput(
+      "slider.qrange",
+      label = h4("Range of Question"),
+      min = 1L,
+      max = nrow(main),
+      value = c(1,nrow(main)))
   }) 
   output$html.action.start <- renderUI({ 
     actionButton("action.start", label = "Start Learning",
@@ -80,8 +85,17 @@ shinyServer(function(input, output, session){
 
 #learning
   observe({
-    qa$range.min <- if_else(is.null(input$slider.qrange[1]), 1L, input$slider.qrange[1])
-    qa$range.max <- if_else(is.null(input$slider.qrange[2]), nrow(main), input$slider.qrange[2]) 
+    if(is.null(input$slider.qrange[1])){
+      qa$range.min <- 1L
+    } else {
+      qa$range.min <- input$slider.qrange[1]
+    }
+    if(is.null(input$slider.qrange[2])){
+      qa$range.max <- nrow(main)
+    } else {
+      qa$range.max <- input$slider.qrange[2]
+    }
+    
     qa$prob <- (abs(input$prob.base - qa$ok * 0.005 - 1) + 1)^(-qa$score[seq(qa$range.min, qa$range.max)]) *
       (cumsum(qa$score[seq(qa$range.min, qa$range.max)] == 0L) <= input$zeronum)
   })
