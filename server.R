@@ -99,6 +99,8 @@ shinyServer(function(input, output, session){
     qa$prob <- (abs(input$prob.base - qa$ok * 0.005 - 1) + 1)^(-qa$score[seq(qa$range.min, qa$range.max)]) *
       (cumsum(qa$score[seq(qa$range.min, qa$range.max)] == 0L) <= input$zeronum)
   })
+  
+  source("shuffle_text.R")
   newQuestion <- function(){
     a <- sample(
       qa$range.max - qa$range.min + 1L,
@@ -106,8 +108,11 @@ shinyServer(function(input, output, session){
       prob = qa$prob
     ) + (qa$range.min - 1L)
     qa$index <- a
-    qa$question <- main$question[a]
-    qa$answer.remember <- main$answer[a]
+    
+    shuffled_qa <- shuffleQuestion(main$question[a], main$answer[a])
+    
+    qa$question <- shuffled_qa$q
+    qa$answer.remember <- shuffled_qa$a
     qa$answer <- "" 
     qa$trial <- qa$trial + 1L
   } 
