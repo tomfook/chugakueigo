@@ -3,11 +3,13 @@ shuffleQuestion <- function(q, a){
     qa_mod <- list(q = q, a = a)
     
     shuffle_text <- function(keywords, qa){
+      q <- qa$q
+      a <- qa$a
       if (b == sample(0:1, 1)){
         for (item in keywords){
-          if (grepl(item[1], qa$a)){
-            q <- gsub(item[3], item[4], qa$q)
-            a <- gsub(item[1], item[2], qa$a)
+          if (grepl(item[1], a)){
+            q <- gsub(item[3], item[4], q)
+            a <- gsub(item[1], item[2], a)
           }
         }
       } else {
@@ -34,7 +36,7 @@ shuffleQuestion <- function(q, a){
       c(" coffee ", " tea ", "コーヒー", "お茶"),
       c(" taxi ", " bus ", "タクシー", "バス"),
       
-      c("\\bBill\\b", "John", "ビル", "ジョン"),
+      c("\\bBill\\b", "Steve", "ビル", "スティーブ"),
       c("Waseda", "Keio", "早稲田", "慶応"),
       c("Fuji Bank", "Mizuho Bank", "富士銀行", "みずほ銀行"),
       
@@ -55,6 +57,14 @@ shuffleQuestion <- function(q, a){
       c("She ", "He ", "彼女", "彼")
     )
     qa_mod <- shuffle_text(keywords2, qa_mod)
+    
+    # 必ずペアで実行する
+    keywords3 <- list(
+      c("\\bfather\\b", "TEMP_FATHER", "父", "TEMP_父"),
+      c("\\bmother\\b", "father", "母", "父"),
+      c("TEMP_FATHER", "mother", "TEMP_父", "母")
+    )
+    qa_mod <- shuffle_text(keywords3, qa_mod)
     
     return(list(q = qa_mod$q, a = qa_mod$a))
 }
