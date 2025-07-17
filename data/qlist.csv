@@ -300,7 +300,7 @@
 "その学校に何人かの留学生がいますか。","Are there any foreign students in that school?"
 "彼の事務所にたくさんの女性従業員がいますか。","Are there a lot of female employees in his office?"
 "あなたの会社にいくつの部がありますか。","How many divisions are there in your company?"
-"イギリスにはいくつ大学がありますか。","How many universities are there in England?"
+"イングランドにはいくつ大学がありますか。","How many universities are there in England?"
 "駅の周りにいくつの銀行がありますか。","How many banks are there around the station?"
 "あの建物は何階建てですか。","How many floors are there in that building?"
 "祝日は１年に何日ありますか。","How many national holidays are there in a year?"
@@ -1456,7 +1456,7 @@
 #p144
 "あなたは２人が別れた理由を知っていますか。", "Do you know the reason why they broke up?"
 "彼は仕事をやめたい理由をあなたに言いましたか。", "Did he tell you the reason why he wanted to quit his job?"
-"イギリスへ行きたい理由を教えてください。", "Tell me the reason why you want to go to England."
+"イングランドへ行きたい理由を教えてください。", "Tell me the reason why you want to go to England."
 "彼が左遷された理由はいくつもあるんです。", "There're several reasons why he was demoted."
 "私が妻と離婚することに決めた理由はたくさんあるんです。", "There're many reasons why I've decided to divorce my wife."
 "私が仕事をやめなければならない理由はたくさんあるんです。", "There're many reasons why I have to quit my job."
@@ -1667,7 +1667,7 @@
 "彼はあなたより遅く退社しました。", "He left the office later than you did."
 "彼はあなたよりゆっくり話す。", "He speaks slower than you do."
 #p192
-"私はイギリスよりアメリカの方が好きです。", "I like America better than England."
+"私はイングランドよりアメリカの方が好きです。", "I like America better than England."
 "私は無地のネクタイより水玉のネクタイの方が好きです。", "I like polka-dot ties better than plain ties."
 "彼はギリシャ語よりポルトガル語の方が上手に話します。", "He speaks Portuguese better than Greek."
 "彼は私よりギターを上手に弾きます。", "He plays the guitar better than I do."
@@ -1675,7 +1675,7 @@
 "彼は私よりこの辺をよく知っています。", "He knows this area better than I do."
 #p193
 "日本は世界で一番安全な国です。", "Japan is the safest country in the world."
-"オックスフォードがイギリスで一番古い大学です。", "Oxford is the oldest university in England."
+"オックスフォードがイングランドで一番古い大学です。", "Oxford is the oldest university in England."
 "ロードアイランドが合衆国で一番小さい州です。", "Rhode Island is the smallest state in the United States."
 "あれが日本で一番高いビルです。", "That is the tallest building in Japan."
 "エヴェレストは世界で一番高い山です。", "Mt. Everest is the highest mountain in the world."
