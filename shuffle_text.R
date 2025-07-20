@@ -9,7 +9,7 @@ shuffleQuestion <- function(q, a){
       bs <- runif(length(keywords)) < 1/2
       kw2 <- keywords[bs]
       for (i in seq_along(kw2)){
-         item <- keywords[i]
+         item <- kw2[[i]]
          if (grepl(item[1], a)){
            q <- gsub(item[3], item[4], q)
            a <- gsub(item[1], item[2], a)
@@ -29,7 +29,7 @@ shuffleQuestion <- function(q, a){
       c(" two hours ", " three hours ", "２時間", "３時間"),
       c(" summer ", " winter ", "夏", "冬"),
       
-      c(" golf ", " tennis ", "ゴルフ", "テニス"),
+      c("golf", "tennis", "ゴルフ", "テニス"),
       c(" piano ", " violin ", "ピアノ", "バイオリン"),
       c(" guitar ", " piano ", "ギター", "ピアノ"),
       c(" green tea ", " black tea ", "緑茶", "紅茶"),
