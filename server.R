@@ -1,8 +1,6 @@
 library(shiny) 
 library(dplyr)
 
-main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE)
-
 read.score <- function(qa, path = "data/score.csv"){
   score <- read.csv(path, comment = "#", stringsAsFactor = FALSE)
   if(nrow(qa) > nrow(score)){
@@ -13,20 +11,32 @@ read.score <- function(qa, path = "data/score.csv"){
   return(score)
 } 
 
-shinyServer(function(input, output, session){ 
-#external data
+initialize_data <- function() {
   main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE) %>%
     filter(question != "", answer != "")
 
-  score.global <- read.score(qa = main, path = "data/score.csv") %>%
+  score_global <- read.score(qa = main, path = "data/score.csv") %>%
     mutate(guest = 0L) %>%
     select(guest, everything())
+
+  list(main = main, score_global = score_global)
+}
+
+calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
+  (abs(prob_base - ok_count * 0.005 - 1) + 1)^(-score_range) *
+    (cumsum(score_range == 0L) <= zero_limit)
+}
+
+shinyServer(function(input, output, session){ 
+  init_data <- initialize_data()
+  main <- init_data$main
+  score_global <- init_data$score_global
 
   qa <- reactiveValues() 
   qa$start <- FALSE
   qa$score <- rep(0L, nrow(main))
-  qa$namelist <- names(score.global)
-  qa$score.all <- score.global
+  qa$namelist <- names(score_global)
+  qa$score.all <- score_global
 
 #render UI
   output$html.slider.qrange <- renderUI({ 
@@ -95,9 +105,14 @@ shinyServer(function(input, output, session){
     } else {
       qa$range.max <- input$slider.qrange[2]
     }
-    
-    qa$prob <- (abs(input$prob.base - qa$ok * 0.005 - 1) + 1)^(-qa$score[seq(qa$range.min, qa$range.max)]) *
-      (cumsum(qa$score[seq(qa$range.min, qa$range.max)] == 0L) <= input$zeronum)
+
+    qa$prob <- calculate_question_probability(
+      score_range = qa$score[seq(qa$range.min, qa$range.max)],
+      prob_base = input$prob.base,
+      ok_count = qa$ok,
+      zero_limit = input$zeronum
+      )
+
   })
   
   source("shuffle_text.R")
