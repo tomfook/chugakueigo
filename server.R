@@ -1,6 +1,7 @@
 library(shiny) 
 library(dplyr)
 source("modules/data_manager.R")
+source("modules/user_manager.R")
 
 calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
   (abs(prob_base - ok_count * 0.005 - 1) + 1)^(-score_range) *
@@ -51,61 +52,49 @@ shinyServer(function(input, output, session){
 
 # useradd
   add_new_user <- function(username, qa_state, main_data) {
-    if (!(username %in% qa_state$namelist)) {
-      qa_state$namelist <- c(qa_state$namelist, username)
-      qa_state$score.all[[username]] <- rep(0L, nrow(main_data))
-      return(list(success = TRUE, message = paste("User", username, "was added.")))
-    } else {
-      return(list(success = FALSE, message = "Your name has been already registered."))
+    validation <- validate_username(username)
+    if (!validation$valid) {
+      return(list(success = FALSE, message = validation$message))
     }
-  }
-  validate_username <- function(username) {
-    if (is.null(username) || username == "" || trimws(username) == ""){
-      return(list(valid = FALSE, message = "Username cannot be empty."))
+
+    result <- create_user_scores(username, qa_state$score.all, nrow(main_data))
+    if (!result$success) {
+      return(result)
     }
-    if (nchar(username) > 50) {
-      return(list(valid = FALSE, message = "Username too long (max 50 characters)."))
-    }
-    if (grepl("[^a-zA-Z0-9_-]", username)) {
-      return(list(valid = FALSE, message = "Username can only contain letters, numbers, underscore, and hyphen."))
-    }
-    return(list(valid = TRUE, message = ""))
+
+    qa_state$score.all <- result$updated_scores
+    qa_state$namelist <- result$updated_namelist
+
+    return(list(success = TRUE, message = result$message))
   }
 
   observeEvent(input$action.useradd,{
-    validation <- validate_username(input$textinp.useradd)
-    if (!validation$valid) {
-      showNotification(validation$message, type = "error")
-    } else {
-      result <- add_new_user(input$textinp.useradd, qa, main)
-      showNotification(result$message)
-      if (result$success) {
-        updateTextInput(session, "textinp.useradd", value = "")
-      }
+    result <- add_new_user(input$textinp.useradd, qa, main)
+    showNotification(result$message, type = if(result$success) "message" else "error")
+    if (result$success) {
+      updateTextInput(session, "textinp.useradd", value = "")
     }
   })
 
 #remove user
   remove_user <- function(username, qa_state) {
-    if (username == "guest") {
-      return(list(success = FALSE, message = "Cannot remove guest user."))
-    }
-  
-    if(!(username %in% qa_state$namelist)) {
-      return(list(success = FALSE, message = "User not found."))
+    result <- remove_user_from_scores(username, qa_state$score.all)
+    if (!result$success) {
+      return(result)
     }
   
     tryCatch({
-      qa_state$namelist <- qa_state$namelist[qa_state$namelist != username]
-      qa_state$score.all[[username]] <- NULL
+      write.table(result$updated_scores, "data/score.csv", row.names = FALSE, sep = ",")
 
-      write.table(qa_state$score.all, "data/score.csv", row.names = FALSE, sep = ",")
+      qa_state$score.all <- result$updated_scores
+      qa_state$namelist <- result$updated_namelist
 
-      return(list(success = TRUE, message = paste("User", username, "was permanently removed.")))
+      return(list(success = TRUE, message = result$message))
     }, error = function(e) {
       return(list(success = FALSE, message = paste("Error removing user:", e$message)))
     })
   }
+
   
   observe({
     delete_choices <- qa$namelist[qa$namelist != "guest"]
