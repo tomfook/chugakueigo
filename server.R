@@ -105,6 +105,55 @@ shinyServer(function(input, output, session){
     }
   })
 
+#remove user
+  remove_user <- function(username, qa_state) {
+    if (username == "guest") {
+      return(list(success = FALSE, message = "Cannot remove guest user."))
+    }
+  
+    if(!(username %in% qa_state$namelist)) {
+      return(list(success = FALSE, message = "User not found."))
+    }
+  
+    tryCatch({
+      qa_state$namelist <- qa_state$namelist[qa_state$namelist != username]
+      qa_state$score.all[[username]] <- NULL
+
+      write.table(qa_state$score.all, "data/score.csv", row.names = FALSE, sep = ",")
+
+      return(list(success = TRUE, message = paste("User", username, "was permanently removed.")))
+    }, error = function(e) {
+      return(list(success = FALSE, message = paste("Error removing user:", e$message)))
+    })
+  }
+  
+  observe({
+    delete_choices <- qa$namelist[qa$namelist != "guest"]
+    updateSelectInput(
+      session,
+      "select.userdelete", 
+      choices = if(length(delete_choices) > 0) delete_choices else "No users to delete"
+    )
+  })
+
+  observeEvent(input$action.userdelete, {
+    selected_user <- input$select.userdelete
+
+    if (is.null(selected_user) || selected_user == "No users to delete") {
+      showNotification("No user selected for deletion.", type = "warning")
+      return()
+    }
+
+    if (selected_user == input$select.user) {
+      showNotification("Cannot delete currently selected use. Please switch to another user first.", type = "warning")
+      return()
+    }
+
+    result <- remove_user(selected_user, qa)
+    showNotification(result$message, type = if(result$success) "message" else "error")
+  })
+
+
 #user account
   observeEvent(input$select.user,{
     qa$trial <- 0L

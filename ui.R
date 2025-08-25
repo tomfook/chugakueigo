@@ -47,8 +47,12 @@ shinyUI(fluidPage(
         ),
         tabPanel("manage",
           h3("Manage"),
-          textInput("textinp.useradd", label = "useradd", value = ""),
-          actionButton("action.useradd", label = "Submit")
+          textInput("textinp.useradd", label = "Add User", value = ""),
+          actionButton("action.useradd", label = "Add User"),
+	  br(), br(),
+
+	  selectInput("select.userdelete", label = "Select User to Delete", choices = NULL),
+	  actionButton("action.userdelete", label = "Delete User", style = "background-color: #d9534f; color: white;")
         ),
         tabPanel("history", 
           h3("History"), 
