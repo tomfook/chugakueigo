@@ -70,14 +70,38 @@ shinyServer(function(input, output, session){
   })
 
 # useradd
+  add_new_user <- function(username, qa_state, main_data) {
+    if (!(username %in% qa_state$namelist)) {
+      qa_state$namelist <- c(qa_state$namelist, username)
+      qa_state$score.all[[username]] <- rep(0L, nrow(main_data))
+      return(list(success = TRUE, message = paste("User", username, "was added.")))
+    } else {
+      return(list(success = FALSE, message = "Your name has been already registered."))
+    }
+  }
+  validate_username <- function(username) {
+    if (is.null(username) || username == "" || trimws(username) == ""){
+      return(list(valid = FALSE, message = "Username cannot be empty."))
+    }
+    if (nchar(username) > 50) {
+      return(list(valid = FALSE, message = "Username too long (max 50 characters)."))
+    }
+    if (grepl("[^a-zA-Z0-9_-]", username)) {
+      return(list(valid = FALSE, message = "Username can only contain letters, numbers, underscore, and hyphen."))
+    }
+    return(list(valid = TRUE, message = ""))
+  }
+
   observeEvent(input$action.useradd,{
-    if(!(input$textinp.useradd %in% qa$namelist)){
-      qa$namelist <- c(qa$namelist, input$textinp.useradd)
-      qa$score.all[[input$textinp.useradd]] <- rep(0L, nrow(main))
-      showNotification(paste("User", input$textinp.useradd, "was added."))
-      updateTextInput(session, "textinp.useradd", value = "")
-    }else{
-      showNotification("Your name has been already resistered.")
+    validation <- validate_username(input$textinp.useradd)
+    if (!validation$valid) {
+      showNotification(validation$message, type = "error")
+    } else {
+      result <- add_new_user(input$textinp.useradd, qa, main)
+      showNotification(result$message)
+      if (result$success) {
+        updateTextInput(session, "textinp.useradd", value = "")
+      }
     }
   })
 
@@ -114,20 +138,29 @@ shinyServer(function(input, output, session){
       )
 
   })
-  
+
   source("shuffle_text.R")
-  newQuestion <- function(){
-    a <- sample(
-      qa$range.max - qa$range.min + 1L,
+  select_next_question <- function(main, qa_state){
+    question_index <- sample(
+      qa_state$range.max - qa_state$range.min + 1L,
       1,
-      prob = qa$prob
-    ) + (qa$range.min - 1L)
-    qa$index <- a
-    
-    shuffled_qa <- shuffleQuestion(main$question[a], main$answer[a])
-    
-    qa$question <- shuffled_qa$q
-    qa$answer.remember <- shuffled_qa$a
+      prob = qa_state$prob
+    ) + (qa_state$range.min - 1L)
+
+    shuffled_qa <- shuffleQuestion(main$question[question_index], main$answer[question_index])
+
+    list(
+      index = question_index,
+      question = shuffled_qa$q,
+      answer = shuffled_qa$a
+    )
+  }
+  
+  newQuestion <- function(){
+    next_q <- select_next_question(main, qa)
+    qa$index <- next_q$index
+    qa$question <- next_q$question
+    qa$answer.remember <- next_q$answer
     qa$answer <- "" 
     qa$trial <- qa$trial + 1L
   } 
