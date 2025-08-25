@@ -1,15 +1,6 @@
 library(shiny) 
 library(dplyr)
-
-read.score <- function(qa, path = "data/score.csv"){
-  score <- read.csv(path, comment = "#", stringsAsFactor = FALSE)
-  if(nrow(qa) > nrow(score)){
-    zero.score <- head(score, nrow(qa) - nrow(score))
-    zero.score[] <- 0L
-    score <- bind_rows(score, zero.score)
-  }
-  return(score)
-} 
+source("modules/data_manager.R")
 
 initialize_data <- function() {
   main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE) %>%
