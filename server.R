@@ -2,17 +2,6 @@ library(shiny)
 library(dplyr)
 source("modules/data_manager.R")
 
-initialize_data <- function() {
-  main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactor = FALSE) %>%
-    filter(question != "", answer != "")
-
-  score_global <- read.score(qa = main, path = "data/score.csv") %>%
-    mutate(guest = 0L) %>%
-    select(guest, everything())
-
-  list(main = main, score_global = score_global)
-}
-
 calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
   (abs(prob_base - ok_count * 0.005 - 1) + 1)^(-score_range) *
     (cumsum(score_range == 0L) <= zero_limit)
@@ -243,7 +232,7 @@ shinyServer(function(input, output, session){
 #save score
   observeEvent(input$action.save,{ 
     if(qa$user == input$select.user){
-      qa$score.all <- read.score(qa = main, path = "data/score.csv")
+      qa$score.all <- read_score(qa = main, path = "data/score.csv")
       qa$score.all[[input$select.user]] <- qa$score
       write.table(qa$score.all, "data/score.csv", row.names=FALSE, sep = ",")
       qa$score.all <- qa$score.all %>%
