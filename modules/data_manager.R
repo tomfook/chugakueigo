@@ -45,3 +45,4 @@ initialize_data <- function() {
     stop("Failed to initialize data: ", e$message)
   })
 }
+

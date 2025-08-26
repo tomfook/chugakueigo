@@ -1,3 +1,5 @@
+source("constants.R")
+
 validate_username <- function(username) {
   if (is.null(username) || username == "" || trimws(username) == "") {
     return(list(valid = FALSE, message = "Username cannot be empty."))
@@ -29,6 +31,22 @@ create_user_scores <- function(username, current_scores, question_count){
     message = paste("User", username, "was added.")
   ))
 }
+add_new_user <- function(username, qa_state, main_data) {
+  validation <- validate_username(username)
+  if (!validation$valid) {
+    return(list(success = FALSE, message = validation$message))
+  }
+
+  result <- create_user_scores(username, qa_state$score.all, nrow(main_data))
+  if (!result$success) {
+    return(result)
+  }
+
+  qa_state$score.all <- result$updated_scores
+  qa_state$namelist <- result$updated_namelist
+
+  return(list(success = TRUE, message = result$message))
+}
 
 remove_user_from_scores <- function(username, current_scores){
   if (username == "guest") {
@@ -48,5 +66,22 @@ remove_user_from_scores <- function(username, current_scores){
     updated_namelist = names(updated_scores),
     message = paste("User", username, "was permanently removed.")
   ))
+}
+remove_user <- function(username, qa_state) {
+  result <- remove_user_from_scores(username, qa_state$score.all)
+  if (!result$success) {
+    return(result)
+  }
+
+  tryCatch({
+    write.table(result$updated_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
+
+    qa_state$score.all <- result$updated_scores
+    qa_state$namelist <- result$updated_namelist
+
+    return(list(success = TRUE, message = result$message))
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error removing user:", e$message)))
+  })
 }
 

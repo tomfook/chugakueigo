@@ -3,6 +3,7 @@ library(dplyr)
 source("modules/data_manager.R")
 source("modules/user_manager.R")
 source("modules/learning_engine.R")
+source("modules/ui_helpers.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
@@ -28,7 +29,7 @@ shinyServer(function(input, output, session){
   output$html.action.start <- renderUI({ 
     actionButton("action.start", label = "Start Learning",
       style = if_else(qa$start, STYLES$INACTIVE, STYLES$ACTIVE)
-)
+    )
   })
   output$html.action.save <- renderUI({ 
     actionButton("action.save", label = "Save Score",
@@ -42,23 +43,6 @@ shinyServer(function(input, output, session){
   })
 
 # useradd
-  add_new_user <- function(username, qa_state, main_data) {
-    validation <- validate_username(username)
-    if (!validation$valid) {
-      return(list(success = FALSE, message = validation$message))
-    }
-
-    result <- create_user_scores(username, qa_state$score.all, nrow(main_data))
-    if (!result$success) {
-      return(result)
-    }
-
-    qa_state$score.all <- result$updated_scores
-    qa_state$namelist <- result$updated_namelist
-
-    return(list(success = TRUE, message = result$message))
-  }
-
   observeEvent(input$action.useradd,{
     result <- add_new_user(input$textinp.useradd, qa, main)
     showNotification(result$message, type = if(result$success) "message" else "error")
@@ -68,25 +52,6 @@ shinyServer(function(input, output, session){
   })
 
 #remove user
-  remove_user <- function(username, qa_state) {
-    result <- remove_user_from_scores(username, qa_state$score.all)
-    if (!result$success) {
-      return(result)
-    }
-  
-    tryCatch({
-      write.table(result$updated_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
-
-      qa_state$score.all <- result$updated_scores
-      qa_state$namelist <- result$updated_namelist
-
-      return(list(success = TRUE, message = result$message))
-    }, error = function(e) {
-      return(list(success = FALSE, message = paste("Error removing user:", e$message)))
-    })
-  }
-
-  
   observe({
     delete_choices <- qa$namelist[qa$namelist != "guest"]
     updateSelectInput(
@@ -177,12 +142,7 @@ shinyServer(function(input, output, session){
       }
     }
   }) 
-  output$about <- renderText({
-    #paste0("Question Number:", qa$index)#, " / Your Score:", qa$score[qa$index])
-  }) 
-  output$qanda <- renderTable({
-    tibble::tibble(` `= c("Q.", "A."), sentence = paste0((c(qa$question, qa$answer)), ""))
-  }) 
+  output$qanda <- create_qanda_renderer(qa)
 
 #save score
   observeEvent(input$action.save,{ 
@@ -199,40 +159,14 @@ shinyServer(function(input, output, session){
   }) 
 
 #current status
-  output$welcome <- renderText({
-    if(qa$start){
-      trial.prefix <- dplyr::case_when(
-        qa$trial %in% 11:13 ~ "th",
-        qa$trial %% 10 == 1 ~ "st",
-        qa$trial %% 10 == 2 ~ "nd",
-        qa$trial %% 10 == 3 ~ "rd",
-        TRUE ~ "th"
-      ) 
-      paste0(
-       input$select.user, "'s ", qa$trial, trial.prefix, " Trial",
-       ", (OK: ", qa$ok, ")"
-       )
-    }else{
-      paste("Not started. Press the start button")
-    }
-  })
+  output$welcome <- create_welcome_renderer(input, qa)
 
 #score
-  output$score.total <- renderText({
-    paste("Total score:", sum(qa$score))
-  })
-  output$score.weak <- renderTable({ 
-    main %>%
-      mutate(score = qa$score) %>%
-      arrange(score) %>%
-      head(5)
-  }) 
+  output$score.total <- create_score_total_renderer(qa)
+  output$score.weak <- create_score_weak_renderer(main, qa)
 
 #questions
-  output$dt.questions <- DT::renderDataTable({
-    main %>%
-      mutate(score = qa$score) %>%
-      select(question, answer, score)
-  }) 
+  output$dt.questions <- create_questions_datatable_renderer(main, qa)
+
 })
 
