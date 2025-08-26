@@ -2,9 +2,10 @@ library(shiny)
 library(dplyr)
 source("modules/data_manager.R")
 source("modules/user_manager.R")
+source("constants.R")
 
 calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
-  (abs(prob_base - ok_count * 0.005 - 1) + 1)^(-score_range) *
+  (abs(prob_base - ok_count * SCORING$MULTIPLIER - 1) + 1)^(-score_range) *
     (cumsum(score_range == 0L) <= zero_limit)
 }
 
@@ -30,18 +31,12 @@ shinyServer(function(input, output, session){
   }) 
   output$html.action.start <- renderUI({ 
     actionButton("action.start", label = "Start Learning",
-      style = if_else(qa$start, 
-	 "color:gray;",
-         "color:black;"
-      ) 
+      style = if_else(qa$start, STYLES$INACTIVE, STYLES$ACTIVE)
 )
   })
   output$html.action.save <- renderUI({ 
     actionButton("action.save", label = "Save Score",
-      style = if_else(identical(qa$score.all[[input$select.user]], qa$score),
-        "color:gray;",
-	"color:black;"
-	) 
+      style = if_else(identical(qa$score.all[[input$select.user]], qa$score), STYLES$INACTIVE, STYLES$ACTIVE)
       )
   })
 
@@ -84,7 +79,7 @@ shinyServer(function(input, output, session){
     }
   
     tryCatch({
-      write.table(result$updated_scores, "data/score.csv", row.names = FALSE, sep = ",")
+      write.table(result$updated_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
 
       qa_state$score.all <- result$updated_scores
       qa_state$namelist <- result$updated_namelist
@@ -221,9 +216,9 @@ shinyServer(function(input, output, session){
 #save score
   observeEvent(input$action.save,{ 
     if(qa$user == input$select.user){
-      qa$score.all <- read_score(qa = main, path = "data/score.csv")
+      qa$score.all <- read_score(qa = main, path = PATHS$SCORES)
       qa$score.all[[input$select.user]] <- qa$score
-      write.table(qa$score.all, "data/score.csv", row.names=FALSE, sep = ",")
+      write.table(qa$score.all, PATHS$SCORES, row.names=FALSE, sep = ",")
       qa$score.all <- qa$score.all %>%
         mutate(guest = 0L) %>%
         select(guest, everything())
