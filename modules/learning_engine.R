@@ -1,4 +1,11 @@
-## shuffle question
+source("constants.R")
+
+calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
+  (abs(prob_base - ok_count * SCORING$MULTIPLIER - 1) + 1)^(-score_range) *
+    (cumsum(score_range == 0L) <= zero_limit)
+}
+
+
 shuffleQuestion <- function(q, a){
     qa_mod <- list(q = q, a = a)
     
@@ -55,4 +62,30 @@ shuffleQuestion <- function(q, a){
     qa_mod <- shuffle_text(keywords1, qa_mod)
     
     return(list(q = qa_mod$q, a = qa_mod$a))
+}
+
+select_next_question <- function(main, qa_state){
+    question_index <- sample(
+      qa_state$range.max - qa_state$range.min + 1L,
+      1,
+      prob = qa_state$prob
+    ) + (qa_state$range.min - 1L)
+
+    shuffled_qa <- shuffleQuestion(main$question[question_index], main$answer[question_index])
+
+    list(
+      index = question_index,
+      question = shuffled_qa$q,
+      answer = shuffled_qa$a
+    )
+}
+
+newQuestion <- function(main, qa_state) {
+  next_q <- select_next_question(main, qa_state)
+  qa_state$index <- next_q$index
+  qa_state$question <- next_q$question
+  qa_state$answer.remember <- next_q$answer
+  qa_state$answer <- ""
+  qa_state$trial <- qa_state$trial + 1L
+  return(qa_state)
 }

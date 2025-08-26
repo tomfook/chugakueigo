@@ -2,12 +2,8 @@ library(shiny)
 library(dplyr)
 source("modules/data_manager.R")
 source("modules/user_manager.R")
+source("modules/learning_engine.R")
 source("constants.R")
-
-calculate_question_probability <- function(score_range, prob_base, ok_count, zero_limit) {
-  (abs(prob_base - ok_count * SCORING$MULTIPLIER - 1) + 1)^(-score_range) *
-    (cumsum(score_range == 0L) <= zero_limit)
-}
 
 shinyServer(function(input, output, session){ 
   init_data <- initialize_data()
@@ -152,36 +148,11 @@ shinyServer(function(input, output, session){
 
   })
 
-  source("shuffle_text.R")
-  select_next_question <- function(main, qa_state){
-    question_index <- sample(
-      qa_state$range.max - qa_state$range.min + 1L,
-      1,
-      prob = qa_state$prob
-    ) + (qa_state$range.min - 1L)
-
-    shuffled_qa <- shuffleQuestion(main$question[question_index], main$answer[question_index])
-
-    list(
-      index = question_index,
-      question = shuffled_qa$q,
-      answer = shuffled_qa$a
-    )
-  }
-  
-  newQuestion <- function(){
-    next_q <- select_next_question(main, qa)
-    qa$index <- next_q$index
-    qa$question <- next_q$question
-    qa$answer.remember <- next_q$answer
-    qa$answer <- "" 
-    qa$trial <- qa$trial + 1L
-  } 
   observeEvent(input$action.start,{ 
     qa$trial <- 0L
     qa$ok <- 0L
     qa$start <- TRUE
-    newQuestion()
+    qa <- newQuestion(main, qa)
   })
   observeEvent(input$action.answer,{
     qa$answer <- qa$answer.remember
@@ -191,7 +162,7 @@ shinyServer(function(input, output, session){
       if(qa$answer != ""){
         qa$score[qa$index] <- qa$score[qa$index] + 1L
 	qa$ok <- qa$ok + 1L
-        newQuestion()
+        qa <- newQuestion(main, qa)
       }else if(qa$answer == ""){
         showNotification("Confirm Answer!")
       }
@@ -200,7 +171,7 @@ shinyServer(function(input, output, session){
   observeEvent(input$action.ng,{
     if(qa$start){
       if(qa$answer != ""){
-        newQuestion()
+        qa <- newQuestion(main, qa)
       }else if(qa$answer == ""){
         showNotification("Confirm Answer!")
       }
