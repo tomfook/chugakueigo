@@ -8,13 +8,22 @@ source("constants.R")
 
 shinyServer(function(input, output, session){ 
   init_result <- data_initialize()
-  if (!init_result$success) {
-    stop("Application startup failed: ", init_result$message)
+  app_error <- !init_result$success
+
+  if (app_error) {
+    main <- data.frame(question = "", answer = "")
+    score_global <- data.frame(guest = 0L)
+    showNotification(
+      paste("Important: Data initialization failed: ", init_result$message, "- restart app"),
+      type = "error", duration = NULL
+      )
+  } else{
+    main <- init_result$data$main
+    score_global <- init_result$data$score_global
   }
-  main <- init_result$data$main
-  score_global <- init_result$data$score_global
 
   qa <- reactiveValues() 
+  qa$app_error <- app_error
   qa$start <- FALSE
   qa$score <- rep(0L, nrow(main))
   qa$namelist <- names(score_global)
@@ -22,14 +31,18 @@ shinyServer(function(input, output, session){
 
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
-  output$html.action.start <- ui_render_action_start(qa$start)
-  output$html.action.save <- ui_render_action_save(identical(qa$score.all[[input$select.user]], qa$score))
+  output$html.action.start <- ui_render_action_start(qa$start, qa$app_error)
+  output$html.action.save <- ui_render_action_save(identical(qa$score.all[[input$select.user]], qa$score), qa$app_error)
 
 # user selection update
   ui_observe_user_selection(session, qa)
 
 # useradd
   observeEvent(input$action.useradd,{
+    if (app_error) {
+      showNotification("Data error: Cannot add user", type = "error")
+      return()
+    }
     result <- user_add_new(input$textinp.useradd, qa, main)
     showNotification(result$message, type = if(result$success) "message" else "error")
     if (result$success) {
@@ -41,6 +54,10 @@ shinyServer(function(input, output, session){
   ui_observe_delete_choices(session, qa)
 
   observeEvent(input$action.userdelete, {
+    if (app_error) {
+      showNotification("Data error: Cannot delete user", type = "error")
+      return()
+    }
     selected_user <- input$select.userdelete
     validation <- user_validate_deletion(selected_user, input$select.user)
     if (!validation$valid) {
@@ -69,6 +86,10 @@ shinyServer(function(input, output, session){
   })
 
   observeEvent(input$action.start,{ 
+    if (app_error) {
+      showNotification("Data error: Cannot start learning", type = "error")
+      return()
+    }
     qa <- learning_start_session(qa, main)
   })
   observeEvent(input$action.answer,{
@@ -92,6 +113,10 @@ shinyServer(function(input, output, session){
 
 #save score
   observeEvent(input$action.save,{ 
+    if (app_error) {
+      showNotification("Data error: Cannot save score", type = "error")
+      return()
+    }
     result <- data_save_user_score(
       username = input$select.user,
       current_user = qa$user,

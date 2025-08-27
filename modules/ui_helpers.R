@@ -68,18 +68,30 @@ ui_render_slider_qrange <- function(max_questions) {
   })
 }
 
-ui_render_action_start <- function(is_started) {
+ui_render_action_start <- function(is_started, has_error = FALSE) {
   renderUI({
-    actionButton("action.start", label = "Start Learning",
-      style = if_else(is_started, STYLES$INACTIVE, STYLES$ACTIVE)
+    if (has_error) {
+      actionButton("action.start", label = "Start Learning (Disabled)",
+	style = STYLES$INACTIVE, disabled = TRUE
+	)
+    } else {
+      actionButton("action.start", label = "Start Learning",
+        style = if_else(is_started, STYLES$INACTIVE, STYLES$ACTIVE)
     )
+    }
   })
 }
 
-ui_render_action_save <- function(scores_match) {
+ui_render_action_save <- function(scores_match, has_error = FALSE) {
   renderUI({
-    actionButton("action.save", label = "Save Score", style = if_else(scores_match, STYLES$INACTIVE, STYLES$ACTIVE)
-    )
+    if (has_error) {
+      actionButton("action.save", label = "Save Score (Disabled)",
+		   style = STYLES$INACTIVE, disabled = TRUE
+		   )
+    } else {
+      actionButton("action.save", label = "Save Score", style = if_else(scores_match, STYLES$INACTIVE, STYLES$ACTIVE)
+      )
+    }
   })
 }
 
