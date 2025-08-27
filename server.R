@@ -109,16 +109,18 @@ shinyServer(function(input, output, session){
 
 #save score
   observeEvent(input$action.save,{ 
-    if(qa$user == input$select.user){
-      qa$score.all <- data_read_score(qa = main, path = PATHS$SCORES)
-      qa$score.all[[input$select.user]] <- qa$score
-      write.table(qa$score.all, PATHS$SCORES, row.names=FALSE, sep = ",")
-      qa$score.all <- qa$score.all %>%
-        mutate(guest = 0L) %>%
-        select(guest, everything())
-    }else{ 
-      showNotification("You switched user account.")
+    result <- data_save_user_score(
+      username = input$select.user,
+      current_user = qa$user,
+      user_scores = qa$score,
+      qa_data = main
+      )
+
+    if (result$success) {
+      qa$score.all <- result$updated_scores
     }
+
+    showNotification(result$message, type = if(result$success) "message" else "error")
   }) 
 
 #current status

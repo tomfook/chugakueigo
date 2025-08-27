@@ -1,4 +1,5 @@
 library(dplyr)
+source("constants.R")
 
 data_read_score <- function(qa, path = "data/score.csv") {
   if (!file.exists(path)) {
@@ -46,3 +47,34 @@ data_initialize <- function() {
   })
 }
 
+data_save_user_score <- function(username, current_user, user_scores, qa_data) {
+  if (username != current_user) {
+    return(list(
+      success = FALSE,
+      updated_scores = NULL,
+      message = "You switched user account."
+    ))
+  }
+
+  tryCatch({
+    score_all <- data_read_score(qa = qa_data, path = PATHS$SCORES)
+    score_all[[username]] <- user_scores
+    write.table(score_all, PATHS$SCORES, row.names = FALSE, sep = ",")
+
+    updated_scores <- score_all %>%
+      mutate(guest = 0L) %>%
+      select(guest, everything())
+
+    return(list(
+      success = TRUE,
+      updated_scores = updated_scores,
+      message = paste("Score saved for user:", username)
+    ))
+  }, error = function(e) {
+    return(list(
+      success = FALSE,
+      updated_scores = NULL,
+      message = paste("Error saving score:", e$message)
+    ))
+  })
+}
