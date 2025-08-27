@@ -26,14 +26,14 @@ data_read_score <- function(qa, path = "data/score.csv") {
 
 data_initialize <- function() {
   tryCatch({
-    main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactors = FALSE) %>%
+    main <- read.csv(PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
       filter(question != "", answer != "")
 
     if (nrow(main) == 0) {
       stop("No valid questions found in qlist.csv")
     }
 
-    score_global <- data_read_score(qa = main, path = "data/score.csv") %>%
+    score_global <- data_read_score(qa = main, path = PATHS$SCORES) %>%
       mutate(guest = 0L) %>%
       select(guest, everything())
 
