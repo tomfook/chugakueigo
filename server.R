@@ -56,53 +56,33 @@ shinyServer(function(input, output, session){
 
 #learning
   observe({
-    if(is.null(input$slider.qrange[1])){
-      qa$range.min <- 1L
-    } else {
-      qa$range.min <- input$slider.qrange[1]
-    }
-    if(is.null(input$slider.qrange[2])){
-      qa$range.max <- nrow(main)
-    } else {
-      qa$range.max <- input$slider.qrange[2]
-    }
-
-    qa$prob <- learning_calculate_probability(
-      score_range = qa$score[seq(qa$range.min, qa$range.max)],
+    qa <- learning_update_range_and_probability(
+      qa = qa,
+      slider_range = input$slider.qrange,
       prob_base = input$prob.base,
-      ok_count = qa$ok,
-      zero_limit = input$zeronum
-      )
-
+      zero_limit = input$zeronum,
+      main_data = main
+    )
   })
 
   observeEvent(input$action.start,{ 
-    qa$trial <- 0L
-    qa$ok <- 0L
-    qa$start <- TRUE
-    qa <- learning_new_question(main, qa)
+    qa <- learning_start_session(qa, main)
   })
   observeEvent(input$action.answer,{
     qa$answer <- qa$answer.remember
   }) 
   observeEvent(input$action.ok,{
-    if(qa$start){
-      if(qa$answer != ""){
-        qa$score[qa$index] <- qa$score[qa$index] + 1L
-	qa$ok <- qa$ok + 1L
-        qa <- learning_new_question(main, qa)
-      }else if(qa$answer == ""){
-        showNotification("Confirm Answer!")
-      }
+    result <- learning_handle_ok_feedback(qa, main)
+    qa <- result$updated_qa
+    if (!result$success) {
+      showNotification(result$message)
     }
   }) 
   observeEvent(input$action.ng,{
-    if(qa$start){
-      if(qa$answer != ""){
-        qa <- learning_new_question(main, qa)
-      }else if(qa$answer == ""){
-        showNotification("Confirm Answer!")
-      }
+    result <- learning_handle_ng_feedback(qa, main)
+    qa <- result$updated_qa
+    if (!result$success) {
+      showNotification(result$message)
     }
   }) 
   output$qanda <- ui_render_qanda(qa)

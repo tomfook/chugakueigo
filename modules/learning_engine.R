@@ -1,11 +1,5 @@
 source("constants.R")
 
-learning_calculate_probability <- function(score_range, prob_base, ok_count, zero_limit) {
-  (abs(prob_base - ok_count * SCORING$MULTIPLIER - 1) + 1)^(-score_range) *
-    (cumsum(score_range == 0L) <= zero_limit)
-}
-
-
 learning_shuffle_question <- function(q, a){
     qa_mod <- list(q = q, a = a)
     
@@ -88,4 +82,61 @@ learning_new_question <- function(main, qa_state) {
   qa_state$answer <- ""
   qa_state$trial <- qa_state$trial + 1L
   return(qa_state)
+}
+
+learning_update_range_and_probability <- function(qa, slider_range, prob_base, zero_limit, main_data) {
+  if(is.null(slider_range[1])) {
+    qa$range.min <- 1L
+  } else {
+    qa$range.min <- slider_range[1]
+  }
+
+  if(is.null(slider_range[2])) {
+    qa$range.max <- nrow(main_data)
+  } else {
+    qa$range.max <- slider_range[2]
+  }
+
+  score_range <- qa$score[seq(qa$range.min, qa$range.max)]
+  qa$prob <- (abs(prob_base - qa$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
+
+  return(qa)
+}
+
+learning_start_session <- function(qa, main_data) {
+  qa$trial <- 0L
+  qa$ok <- 0L
+  qa$start <- TRUE
+  qa <- learning_new_question(main_data, qa)
+  return(qa)
+}
+
+learning_handle_ok_feedback <- function(qa, main_data) {
+  if (!qa$start) {
+    return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
+  }
+
+  if (qa$answer == "") {
+    return(list(success = FALSE, updated_qa = qa, message = "Confirm Answer!"))
+  }
+
+  qa$score[qa$index] <- qa$score[qa$index] + 1L
+  qa$ok <- qa$ok + 1L
+  qa <- learning_new_question(main_data, qa)
+
+  return(list(success = TRUE, updated_qa = qa, message = ""))
+}
+
+learning_handle_ng_feedback <- function(qa, main_data) {
+  if (!qa$start) {
+    return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
+  }
+
+  if (qa$answer == "") {
+    return(list(success = FALSE, updated_qa = qa, message = "Confirm Answer!"))
+  }
+
+  qa <- learning_new_question(main_data, qa)
+
+  return(list(success = TRUE, updated_qa = qa, message = ""))
 }
