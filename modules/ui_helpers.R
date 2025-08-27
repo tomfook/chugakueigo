@@ -23,48 +23,36 @@ ui_render_welcome <- function(input, qa) {
   })
 }
 
-ui_calculate_total_score <- function(scores) {
-  sum(scores)
-}
 ui_render_score_total<- function(qa) {
   renderText({
-    total <- ui_calculate_total_score(qa$score)
+    total <- sum(qa$score)
     paste("Total score:", total)
   })
 }
 
-ui_get_weak_questions <- function(questions_data, scores, limit = 5) {
-  questions_data %>%
-    mutate(score = scores) %>%
-    arrange(score) %>%
-    head(limit)
-}
 ui_render_score_weak <- function(main, qa, limit = 5) {
   renderTable({
-    ui_get_weak_questions(main, qa$score, limit)
+    main %>%
+      mutate(score = qa$score) %>%
+      arrange(score) %>%
+      head(limit)
   })
 }
 
-ui_format_qanda_data <- function(question, answer) {
-  tibble::tibble(
-    ` ` = c("Q.", "A."),
-    sentence = paste0(c(question, answer), "")
-  )
-}
 ui_render_qanda <- function(qa) {
   renderTable({
-    ui_format_qanda_data(qa$question, qa$answer)
+    tibble::tibble(
+      ` ` = c("Q.", "A."),
+      sentence = paste0(c(qa$question, qa$answer), "")
+    )
   })
 }
 
-ui_prepare_questions_data <- function(questions_data, scores) {
-  questions_data %>%
-    mutate(score = scores) %>%
-    select(question, answer, score)
-}
 ui_render_questions_table <- function(main, qa) {
   DT::renderDataTable({
-    ui_prepare_questions_data(main, qa$score)
+    main %>%
+      mutate(score = qa$score) %>%
+      select(question, answer, score)
   })
 }
 
