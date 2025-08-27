@@ -99,14 +99,14 @@ shinyServer(function(input, output, session){
     result <- learning_handle_ok_feedback(qa, main)
     qa <- result$updated_qa
     if (!result$success) {
-      showNotification(result$message, type = "message")
+      ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
     result <- learning_handle_ng_feedback(qa, main)
     qa <- result$updated_qa
     if (!result$success) {
-      showNotification(result$message, type = "message")
+      ui_show_result(result)
     }
   }) 
   output$qanda <- ui_render_qanda(qa)
