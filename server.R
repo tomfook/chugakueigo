@@ -39,17 +39,11 @@ shinyServer(function(input, output, session){
 
   observeEvent(input$action.userdelete, {
     selected_user <- input$select.userdelete
-
-    if (is.null(selected_user) || selected_user == "No users to delete") {
-      showNotification("No user selected for deletion.", type = "warning")
+    validation <- user_validate_deletion(selected_user, input$select.user)
+    if (!validation$valid) {
+      showNotification(validation$message, type = validation$type)
       return()
     }
-
-    if (selected_user == input$select.user) {
-      showNotification("Cannot delete currently selected use. Please switch to another user first.", type = "warning")
-      return()
-    }
-
     result <- user_remove(selected_user, qa)
     showNotification(result$message, type = if(result$success) "message" else "error")
   })
@@ -57,14 +51,7 @@ shinyServer(function(input, output, session){
 
 #user account
   observeEvent(input$select.user,{
-    qa$trial <- 0L
-    qa$ok <- 0L
-    qa$start <- FALSE
-    qa$user <- input$select.user
-    qa$score <- qa$score.all[[input$select.user]]
-    qa$index <- NULL
-    qa$question <- ""
-    qa$answer <- ""
+    qa <- user_switch_reset_state(qa, input$select.user)
   }) 
 
 #learning

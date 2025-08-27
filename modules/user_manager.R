@@ -16,6 +16,18 @@ user_validate_username <- function(username) {
   return(list(valid = TRUE, message = ""))
 }
 
+user_validate_deletion <- function(selected_user, current_user) {
+  if (is.null(selected_user) || selected_user == "No users to delete") {
+    return(list(valid = FALSE, message = "No user selected for deletion.", type = "warning"))
+  }
+
+  if (selected_user == current_user) {
+    return(list(valid = FALSE, message = "Cannot delete currently selected user. Please switch to another user first.", type = "warning"))
+  }
+
+  return(list(valid = TRUE, message = "", type = ""))
+}
+
 user_create_scores <- function(username, current_scores, question_count){
   if (username %in% names(current_scores)) {
     return(list(success = FALSE, message = "Your name has been already registered."))
@@ -83,5 +95,18 @@ user_remove <- function(username, qa_state) {
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error removing user:", e$message)))
   })
+}
+
+user_switch_reset_state <- function(qa_state, new_username) {
+  qa_state$trial <- 0L
+  qa_state$ok <- 0L
+  qa_state$start <- FALSE
+  qa_state$user <- new_username
+  qa_state$score <- qa_state$score.all[[new_username]]
+  qa_state$index <- NULL
+  qa_state$question <- ""
+  qa_state$answer <- ""
+
+  return(qa_state)
 }
 
