@@ -1,6 +1,6 @@
 source("constants.R")
 
-validate_username <- function(username) {
+user_validate_username <- function(username) {
   if (is.null(username) || username == "" || trimws(username) == "") {
     return(list(valid = FALSE, message = "Username cannot be empty."))
   }
@@ -16,7 +16,7 @@ validate_username <- function(username) {
   return(list(valid = TRUE, message = ""))
 }
 
-create_user_scores <- function(username, current_scores, question_count){
+user_create_scores <- function(username, current_scores, question_count){
   if (username %in% names(current_scores)) {
     return(list(success = FALSE, message = "Your name has been already registered."))
   }
@@ -31,13 +31,13 @@ create_user_scores <- function(username, current_scores, question_count){
     message = paste("User", username, "was added.")
   ))
 }
-add_new_user <- function(username, qa_state, main_data) {
-  validation <- validate_username(username)
+user_add_new <- function(username, qa_state, main_data) {
+  validation <- user_validate_username(username)
   if (!validation$valid) {
     return(list(success = FALSE, message = validation$message))
   }
 
-  result <- create_user_scores(username, qa_state$score.all, nrow(main_data))
+  result <- user_create_scores(username, qa_state$score.all, nrow(main_data))
   if (!result$success) {
     return(result)
   }
@@ -48,7 +48,7 @@ add_new_user <- function(username, qa_state, main_data) {
   return(list(success = TRUE, message = result$message))
 }
 
-remove_user_from_scores <- function(username, current_scores){
+user_remove_from_scores <- function(username, current_scores){
   if (username == "guest") {
       return(list(success = FALSE, message = "Cannot remove guest user."))
   }
@@ -67,8 +67,8 @@ remove_user_from_scores <- function(username, current_scores){
     message = paste("User", username, "was permanently removed.")
   ))
 }
-remove_user <- function(username, qa_state) {
-  result <- remove_user_from_scores(username, qa_state$score.all)
+user_remove <- function(username, qa_state) {
+  result <- user_remove_from_scores(username, qa_state$score.all)
   if (!result$success) {
     return(result)
   }

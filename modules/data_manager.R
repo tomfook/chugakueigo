@@ -1,6 +1,6 @@
 library(dplyr)
 
-read_score <- function(qa, path = "data/score.csv") {
+data_read_score <- function(qa, path = "data/score.csv") {
   if (!file.exists(path)) {
     warning("Score file not found, creating new one: ", path)
     score <- data.frame(guest = rep(0L, nrow(qa)))
@@ -23,7 +23,7 @@ read_score <- function(qa, path = "data/score.csv") {
   return(score)
 }
 
-initialize_data <- function() {
+data_initialize <- function() {
   tryCatch({
     main <- read.csv("data/qlist.csv", comment = "#", stringsAsFactors = FALSE) %>%
       filter(question != "", answer != "")
@@ -32,7 +32,7 @@ initialize_data <- function() {
       stop("No valid questions found in qlist.csv")
     }
 
-    score_global <- read_score(qa = main, path = "data/score.csv") %>%
+    score_global <- data_read_score(qa = main, path = "data/score.csv") %>%
       mutate(guest = 0L) %>%
       select(guest, everything())
 

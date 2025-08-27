@@ -7,7 +7,7 @@ source("modules/ui_helpers.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
-  init_data <- initialize_data()
+  init_data <- data_initialize()
   main <- init_data$main
   score_global <- init_data$score_global
 
@@ -44,7 +44,7 @@ shinyServer(function(input, output, session){
 
 # useradd
   observeEvent(input$action.useradd,{
-    result <- add_new_user(input$textinp.useradd, qa, main)
+    result <- user_add_new(input$textinp.useradd, qa, main)
     showNotification(result$message, type = if(result$success) "message" else "error")
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
@@ -74,7 +74,7 @@ shinyServer(function(input, output, session){
       return()
     }
 
-    result <- remove_user(selected_user, qa)
+    result <- user_remove(selected_user, qa)
     showNotification(result$message, type = if(result$success) "message" else "error")
   })
 
@@ -104,7 +104,7 @@ shinyServer(function(input, output, session){
       qa$range.max <- input$slider.qrange[2]
     }
 
-    qa$prob <- calculate_question_probability(
+    qa$prob <- learning_calculate_probability(
       score_range = qa$score[seq(qa$range.min, qa$range.max)],
       prob_base = input$prob.base,
       ok_count = qa$ok,
@@ -117,7 +117,7 @@ shinyServer(function(input, output, session){
     qa$trial <- 0L
     qa$ok <- 0L
     qa$start <- TRUE
-    qa <- newQuestion(main, qa)
+    qa <- learning_new_question(main, qa)
   })
   observeEvent(input$action.answer,{
     qa$answer <- qa$answer.remember
@@ -127,7 +127,7 @@ shinyServer(function(input, output, session){
       if(qa$answer != ""){
         qa$score[qa$index] <- qa$score[qa$index] + 1L
 	qa$ok <- qa$ok + 1L
-        qa <- newQuestion(main, qa)
+        qa <- learning_new_question(main, qa)
       }else if(qa$answer == ""){
         showNotification("Confirm Answer!")
       }
@@ -136,18 +136,18 @@ shinyServer(function(input, output, session){
   observeEvent(input$action.ng,{
     if(qa$start){
       if(qa$answer != ""){
-        qa <- newQuestion(main, qa)
+        qa <- learning_new_question(main, qa)
       }else if(qa$answer == ""){
         showNotification("Confirm Answer!")
       }
     }
   }) 
-  output$qanda <- create_qanda_renderer(qa)
+  output$qanda <- ui_render_qanda(qa)
 
 #save score
   observeEvent(input$action.save,{ 
     if(qa$user == input$select.user){
-      qa$score.all <- read_score(qa = main, path = PATHS$SCORES)
+      qa$score.all <- data_read_score(qa = main, path = PATHS$SCORES)
       qa$score.all[[input$select.user]] <- qa$score
       write.table(qa$score.all, PATHS$SCORES, row.names=FALSE, sep = ",")
       qa$score.all <- qa$score.all %>%
@@ -159,14 +159,14 @@ shinyServer(function(input, output, session){
   }) 
 
 #current status
-  output$welcome <- create_welcome_renderer(input, qa)
+  output$welcome <- ui_render_welcome(input, qa)
 
 #score
-  output$score.total <- create_score_total_renderer(qa)
-  output$score.weak <- create_score_weak_renderer(main, qa)
+  output$score.total <- ui_render_score_total(qa)
+  output$score.weak <- ui_render_score_weak(main, qa)
 
 #questions
-  output$dt.questions <- create_questions_datatable_renderer(main, qa)
+  output$dt.questions <- ui_render_questions_table(main, qa)
 
 })
 
