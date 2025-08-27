@@ -24,3 +24,9 @@ DEFAULTS <- list(
 SCORING <- list(
   MULTIPLIER = 0.005
 )
+
+# Shuffle Configuration
+SHUFFLE <- list(
+  SELECTION_RATE = 0.5,
+  MIN_SELECTION = 1
+)
