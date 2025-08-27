@@ -40,11 +40,11 @@ shinyServer(function(input, output, session){
 # useradd
   observeEvent(input$action.useradd,{
     if (app_error) {
-      showNotification("Data error: Cannot add user", type = "error")
+      ui_show_data_error("add user")
       return()
     }
     result <- user_add_new(input$textinp.useradd, qa, main)
-    showNotification(result$message, type = if(result$success) "message" else "error")
+    ui_show_result(result)
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
     }
@@ -55,7 +55,7 @@ shinyServer(function(input, output, session){
 
   observeEvent(input$action.userdelete, {
     if (app_error) {
-      showNotification("Data error: Cannot delete user", type = "error")
+      ui_show_data_error("delete user")
       return()
     }
     selected_user <- input$select.userdelete
@@ -65,7 +65,7 @@ shinyServer(function(input, output, session){
       return()
     }
     result <- user_remove(selected_user, qa)
-    showNotification(result$message, type = if(result$success) "message" else "error")
+    ui_show_result(result)
   })
 
 
@@ -87,7 +87,7 @@ shinyServer(function(input, output, session){
 
   observeEvent(input$action.start,{ 
     if (app_error) {
-      showNotification("Data error: Cannot start learning", type = "error")
+      ui_show_data_error("start learning")
       return()
     }
     qa <- learning_start_session(qa, main)
@@ -99,14 +99,14 @@ shinyServer(function(input, output, session){
     result <- learning_handle_ok_feedback(qa, main)
     qa <- result$updated_qa
     if (!result$success) {
-      showNotification(result$message)
+      showNotification(result$message, type = "message")
     }
   }) 
   observeEvent(input$action.ng,{
     result <- learning_handle_ng_feedback(qa, main)
     qa <- result$updated_qa
     if (!result$success) {
-      showNotification(result$message)
+      showNotification(result$message, type = "message")
     }
   }) 
   output$qanda <- ui_render_qanda(qa)
@@ -114,7 +114,7 @@ shinyServer(function(input, output, session){
 #save score
   observeEvent(input$action.save,{ 
     if (app_error) {
-      showNotification("Data error: Cannot save score", type = "error")
+      ui_show_data_error("save score")
       return()
     }
     result <- data_save_user_score(
@@ -128,7 +128,7 @@ shinyServer(function(input, output, session){
       qa$score.all <- result$updated_scores
     }
 
-    showNotification(result$message, type = if(result$success) "message" else "error")
+    ui_show_result(result)
   }) 
 
 #current status

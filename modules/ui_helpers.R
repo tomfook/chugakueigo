@@ -2,7 +2,7 @@ library(dplyr)
 source("constants.R")
 
 #==============
-# UI render functions (UI生成) 
+# UI render functions 
 #==============
 ui_render_welcome <- function(input, qa) {
   renderText({
@@ -97,7 +97,7 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
 
 
 #=======
-# UI Observer Functions (UI更新)
+# UI Observer Functions 
 #=======
 ui_observe_user_selection <- function(session, qa){
   observe({
@@ -114,4 +114,21 @@ ui_observe_delete_choices <- function(session, qa) {
       choices = if(length(delete_choices) > 0) delete_choices else "No users to delete"
       )
   })
+}
+
+
+#======
+# UI Show Notification Functions
+#======
+ui_show_result <- function(result) {
+  showNotification(
+    result$message,
+    type = if(result$success) "message" else "error"
+  )
+}
+
+ui_show_data_error <- function(operation) {
+  showNotification(
+    paste("Data error: Cannot", operation), type = "error"
+  )
 }
