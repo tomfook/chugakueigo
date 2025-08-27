@@ -18,29 +18,12 @@ shinyServer(function(input, output, session){
   qa$score.all <- score_global
 
 #render UI
-  output$html.slider.qrange <- renderUI({ 
-    sliderInput(
-      "slider.qrange",
-      label = h4("Range of Question"),
-      min = 1L,
-      max = nrow(main),
-      value = c(1,nrow(main)))
-  }) 
-  output$html.action.start <- renderUI({ 
-    actionButton("action.start", label = "Start Learning",
-      style = if_else(qa$start, STYLES$INACTIVE, STYLES$ACTIVE)
-    )
-  })
-  output$html.action.save <- renderUI({ 
-    actionButton("action.save", label = "Save Score",
-      style = if_else(identical(qa$score.all[[input$select.user]], qa$score), STYLES$INACTIVE, STYLES$ACTIVE)
-      )
-  })
+  output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
+  output$html.action.start <- ui_render_action_start(qa$start)
+  output$html.action.save <- ui_render_action_save(identical(qa$score.all[[input$select.user]], qa$score))
 
 # user selection update
-  observe({
-    updateSelectInput(session, "select.user", choices = qa$namelist)
-  })
+  ui_observe_user_selection(session, qa)
 
 # useradd
   observeEvent(input$action.useradd,{
@@ -52,14 +35,7 @@ shinyServer(function(input, output, session){
   })
 
 #remove user
-  observe({
-    delete_choices <- qa$namelist[qa$namelist != "guest"]
-    updateSelectInput(
-      session,
-      "select.userdelete", 
-      choices = if(length(delete_choices) > 0) delete_choices else "No users to delete"
-    )
-  })
+  ui_observe_delete_choices(session, qa)
 
   observeEvent(input$action.userdelete, {
     selected_user <- input$select.userdelete
