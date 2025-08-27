@@ -95,7 +95,7 @@ ui_observe_user_selection <- function(session, qa){
 
 ui_observe_delete_choices <- function(session, qa) {
   observe({
-    delete_choices <- qa$namelist[qa$namelist != "guest"]
+    delete_choices <- qa$namelist[qa$namelist != DEFAULTS$USER]
     updateSelectInput(
       session,
       "select.userdelete",
