@@ -4,6 +4,7 @@ source("modules/data_manager.R")
 source("modules/user_manager.R")
 source("modules/learning_engine.R")
 source("modules/ui_helpers.R")
+source("modules/state_manager.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
@@ -22,12 +23,11 @@ shinyServer(function(input, output, session){
     score_global <- init_result$data$score_global
   }
 
+  qa_init <- state_initialize(main, score_global, app_error)
   qa <- reactiveValues() 
-  qa$app_error <- app_error
-  qa$start <- FALSE
-  qa$score <- rep(0L, nrow(main))
-  qa$namelist <- names(score_global)
-  qa$score.all <- score_global
+  for(name in names(qa_init)) {
+    qa[[name]] <- qa_init[[name]]
+  }
 
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
