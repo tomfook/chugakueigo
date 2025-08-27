@@ -29,12 +29,12 @@ data_initialize <- function() {
       filter(question != "", answer != "")
 
     if (nrow(main) == 0) {
-      stop("No valid questions found in qlist.csv")
+      return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
     score_result <- data_read_score(qa = main, path = PATHS$SCORES)
     if (!score_result$success) {
-      stop("Failed to initialize: ", score_result$message)
+      return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
     score_global <- score_result$data %>%
       mutate(guest = 0L) %>%
@@ -44,9 +44,9 @@ data_initialize <- function() {
       warning("Question and score data length mismatch. This has been automatically corrected.")
     }
 
-    list(main = main, score_global = score_global)
+    return(list(success = TRUE, data = list(main = main, score_global = score_global), message = "Data initialized successfully"))
   }, error = function(e) {
-    stop("Failed to initialize data: ", e$message)
+    return(list(success = FALSE, data = NULL, message = paste("Failed to initialize data:", e$message)))
   })
 }
 

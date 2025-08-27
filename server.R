@@ -7,9 +7,12 @@ source("modules/ui_helpers.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
-  init_data <- data_initialize()
-  main <- init_data$main
-  score_global <- init_data$score_global
+  init_result <- data_initialize()
+  if (!init_result$success) {
+    stop("Application startup failed: ", init_result$message)
+  }
+  main <- init_result$data$main
+  score_global <- init_result$data$score_global
 
   qa <- reactiveValues() 
   qa$start <- FALSE
