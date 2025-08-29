@@ -64,8 +64,21 @@ shinyServer(function(input, output, session){
       showNotification(validation$message, type = validation$type)
       return()
     }
+
+    showModal(modalDialog(
+      title = "Confirmation",
+      paste("Are you sure you want to delete user '", selected_user, "'?", sep = ""),
+      footer = tagList(
+	modalButton("Cancel"),
+	actionButton("confirm_delete", "Delete", class = "btn-danger")
+      )
+    ))
+  })
+  observeEvent(input$confirm_delete, {
+    selected_user <- input$select.userdelete
     result <- user_remove(selected_user, qa)
     ui_show_result(result)
+    removeModal()
   })
 
 
