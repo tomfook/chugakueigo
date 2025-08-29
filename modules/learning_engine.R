@@ -31,12 +31,12 @@ learning_shuffle_question <- function(q, a){
     return(list(q = qa_mod$q, a = qa_mod$a))
 }
 
-learning_select_next_question <- function(main, qa_state){
-    question_index <- sample(
-      qa_state$range.max - qa_state$range.min + 1L,
-      1,
-      prob = qa_state$prob
-    ) + (qa_state$range.min - 1L)
+learning_select_next_question <- function(main, config_state) {
+  question_index <- sample(
+    config_state$range_max - config_state$range_min + 1L,
+    1,
+    prob = config_state$probabilities
+  ) + (config_state$range_min - 1L)
 
     shuffled_qa <- learning_shuffle_question(main$question[question_index], main$answer[question_index])
 
@@ -47,8 +47,8 @@ learning_select_next_question <- function(main, qa_state){
     )
 }
 
-learning_new_question <- function(main, qa_state) {
-  next_q <- learning_select_next_question(main, qa_state)
+learning_new_question <- function(main, qa_state, config_state) {
+  next_q <- learning_select_next_question(main, config_state)
   qa_state$index <- next_q$index
   qa_state$question <- next_q$question
   qa_state$answer.remember <- next_q$answer
@@ -57,34 +57,34 @@ learning_new_question <- function(main, qa_state) {
   return(qa_state)
 }
 
-learning_update_range_and_probability <- function(qa, slider_range, prob_base, zero_limit, main_data) {
+learning_update_range_and_probability <- function(config_state, qa, slider_range, prob_base, zero_limit, main_data) {
   if(is.null(slider_range[1])) {
-    qa$range.min <- 1L
+    config_state$range_min <- 1L
   } else {
-    qa$range.min <- slider_range[1]
+    config_state$range_min <- slider_range[1]
   }
 
   if(is.null(slider_range[2])) {
-    qa$range.max <- nrow(main_data)
+    config_state$range_max <- nrow(main_data)
   } else {
-    qa$range.max <- slider_range[2]
+    config_state$range_max <- slider_range[2]
   }
 
-  score_range <- qa$score[seq(qa$range.min, qa$range.max)]
-  qa$prob <- (abs(prob_base - qa$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
+  score_range <- qa$score[seq(config_state$range_min, config_state$range_max)]
+  config_state$probabilities <- (abs(prob_base - qa$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
+  return(config_state)
 
-  return(qa)
 }
 
-learning_start_session <- function(qa, main_data) {
+learning_start_session <- function(qa, main_data, config_state) {
   qa$trial <- 0L
   qa$ok <- 0L
   qa$start <- TRUE
-  qa <- learning_new_question(main_data, qa)
+  qa <- learning_new_question(main_data, qa, config_state)
   return(qa)
 }
 
-learning_handle_ok_feedback <- function(qa, main_data) {
+learning_handle_ok_feedback <- function(qa, main_data, config_state) {
   if (!qa$start) {
     return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
   }
@@ -95,12 +95,12 @@ learning_handle_ok_feedback <- function(qa, main_data) {
 
   qa$score[qa$index] <- qa$score[qa$index] + 1L
   qa$ok <- qa$ok + 1L
-  qa <- learning_new_question(main_data, qa)
+  qa <- learning_new_question(main_data, qa, config_state)
 
   return(list(success = TRUE, updated_qa = qa, message = ""))
 }
 
-learning_handle_ng_feedback <- function(qa, main_data) {
+learning_handle_ng_feedback <- function(qa, main_data, config_state) {
   if (!qa$start) {
     return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
   }
@@ -109,7 +109,7 @@ learning_handle_ng_feedback <- function(qa, main_data) {
     return(list(success = FALSE, updated_qa = qa, message = "Confirm Answer!"))
   }
 
-  qa <- learning_new_question(main_data, qa)
+  qa <- learning_new_question(main_data, qa, config_state)
 
   return(list(success = TRUE, updated_qa = qa, message = ""))
 }

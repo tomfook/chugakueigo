@@ -18,12 +18,15 @@ state_initialize <- function(main_data, score_global, app_error) {
     index = NULL,
     question = "",
     answer = "",
-    answer.remember = "",
+    answer.remember = ""
 
-    #configuration
-    range.min = 1L,
-    range.max = nrow(main_data),
-    prob = rep(1, nrow(main_data))
     )
 }
 
+state_initialize_config <- function(main_data) {
+  list(
+    range_min = 1L,
+    range_max = nrow(main_data),
+    probabilities = rep(1, nrow(main_data))
+  )
+}
