@@ -43,3 +43,13 @@ state_create_reactive <- function(init_data) {
   }
   return(rv)
 }
+
+state_reset_learning <- function(learning_state) {
+  learning_state$question_count <- 0L
+  learning_state$correct_count <- 0L
+  learning_state$start <- FALSE
+  learning_state$index <- NULL
+  learning_state$question <- ""
+  learning_state$answer <- ""
+  return(learning_state)
+}

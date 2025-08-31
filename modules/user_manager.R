@@ -102,14 +102,8 @@ user_remove <- function(username, user_state) {
 }
 
 user_switch_reset_state <- function(user_state, new_username) {
-  user_state$question_count <- 0L
-  user_state$correct_count <- 0L
-  user_state$start <- FALSE
   user_state$user <- new_username
   user_state$score <- user_state$all_user_scores[[new_username]]
-  user_state$index <- NULL
-  user_state$question <- ""
-  user_state$answer <- ""
 
   return(user_state)
 }

@@ -52,6 +52,7 @@ shinyServer(function(input, output, session){
   # User account switching
   observeEvent(input$select.user,{
     user_state <- user_switch_reset_state(user_state, input$select.user)
+    learning_state <- state_reset_learning(learning_state)
   }) 
 
   # User addition
