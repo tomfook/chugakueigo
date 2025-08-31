@@ -8,6 +8,10 @@ source("modules/state_manager.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
+  # =============== INITIALIZATION ==================
+  # Data initialization, error handling, and state setup
+
+  # Initialize core data
   init_result <- data_initialize()
   app_error <- !init_result$success
 
@@ -23,6 +27,7 @@ shinyServer(function(input, output, session){
     score_global <- init_result$data$score_global
   }
 
+  # Initialize reactive states
   user_state_init <- state_initialize_user(qa_data, score_global, app_error)
   user_state <- reactiveValues() 
   for(name in names(user_state_init)) {
@@ -40,16 +45,27 @@ shinyServer(function(input, output, session){
   for(name in names(learning_state_init)) {
     learning_state[[name]] <- learning_state_init[[name]]
   }
+  
+  # =============== UI RENDERING ====================
+  # Static UI element rendering
 
-#render UI
+  # Render dynamic UI elements
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
   output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
   output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score), user_state$app_error)
 
-# user selection update
+  # User selection observer
   ui_observe_user_selection(session, user_state)
 
-# useradd
+  # =============== USER MANAGEMENT =================
+  # User selection, addition, deletion handling
+
+  # User account switching
+  observeEvent(input$select.user,{
+    user_state <- user_switch_reset_state(user_state, input$select.user)
+  }) 
+
+  # User addition
   observeEvent(input$action.useradd,{
     if (app_error) {
       ui_show_data_error("add user")
@@ -62,7 +78,7 @@ shinyServer(function(input, output, session){
     }
   })
 
-#remove user
+  # User deletion
   ui_observe_delete_choices(session, user_state)
 
   observeEvent(input$action.userdelete, {
@@ -93,13 +109,10 @@ shinyServer(function(input, output, session){
     removeModal()
   })
 
+  # =============== LEARNING ENGINE =================
+  # Learning session, question display, feedback processing
 
-#user account
-  observeEvent(input$select.user,{
-    user_state <- user_switch_reset_state(user_state, input$select.user)
-  }) 
-
-#learning
+  # Configuration updates
   observe({
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
@@ -107,6 +120,7 @@ shinyServer(function(input, output, session){
     config_state <- learning_update_probability(config_state, user_state, learning_state)
   })
 
+  # Learning session controls
   observeEvent(input$action.start,{ 
     if (app_error) {
       ui_show_data_error("start learning")
@@ -117,6 +131,8 @@ shinyServer(function(input, output, session){
   observeEvent(input$action.answer,{
     learning_state$answer <- learning_state$correct_answer
   }) 
+
+  # Feedback handling
   observeEvent(input$action.ok,{
     result <- learning_handle_feedback(user_state, qa_data, config_state, learning_state, is_correct = TRUE)
     user_state <- result$updated_user_state
@@ -133,9 +149,11 @@ shinyServer(function(input, output, session){
       ui_show_result(result)
     }
   }) 
-  output$qanda <- ui_render_qanda(learning_state)
 
-#save score
+  # =============== DATA PERSISTENCE ================
+  # Score saving and data persistence
+
+  # Save user score
   observeEvent(input$action.save,{ 
     if (app_error) {
       ui_show_data_error("save score")
@@ -149,20 +167,26 @@ shinyServer(function(input, output, session){
       )
 
     if (result$success) {
-      user_state$all_user_scores <- result$updated_scores
+      user_state$all_user_scores <- result$data
     }
 
     ui_show_result(result)
   }) 
 
-#current status
+  # =============== OUTPUT RENDERING ================
+  # Dynamic content output rendering
+
+  # Learning interface
+  output$qanda <- ui_render_qanda(learning_state)
+
+  # Status displays
   output$welcome <- ui_render_welcome(input, user_state, learning_state)
 
-#score
+  # Score displays
   output$score.total <- ui_render_score_total(user_state)
   output$score.weak <- ui_render_score_weak(qa_data, user_state)
 
-#questions
+  # Questions table
   output$dt.questions <- ui_render_questions_table(qa_data, user_state)
 
 })

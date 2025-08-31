@@ -1,6 +1,14 @@
+# =============================
+# DATA MANAGER MODULE
+# Handles data file operations: reading, writing, and initialization
+# =============================
+
 library(dplyr)
 source("constants.R")
 
+# =============================
+# Core File Operations
+# =============================
 data_read_score <- function(qa_data, path = "data/score.csv") {
   if (!file.exists(path)) {
     score <- data.frame(guest = rep(0L, nrow(qa_data)))
@@ -27,6 +35,10 @@ data_read_score <- function(qa_data, path = "data/score.csv") {
 
   return(list(success = TRUE, data = score, message = "Score data loaded successfully"))
 }
+
+# ==============================
+# Application Initialization
+# ==============================
 
 data_initialize <- function() {
   tryCatch({
@@ -55,11 +67,15 @@ data_initialize <- function() {
   })
 }
 
+# ===============================
+# Data Persistence Operations
+# ===============================
+
 data_save_user_score <- function(username, current_user, user_scores, qa_data) {
   if (username != current_user) {
     return(list(
       success = FALSE,
-      updated_scores = NULL,
+      data = NULL,
       message = "You switched user account."
     ))
   }
@@ -67,7 +83,7 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
   tryCatch({
     score_result <- data_read_score(qa_data = qa_data, path = PATHS$SCORES)
     if (!score_result$success) {
-      return(list(success = FALSE, updated_scores = NULL, message = score_result$message))
+      return(list(success = FALSE, data = NULL, message = score_result$message))
     }
     existing_scores <- score_result$data
     existing_scores[[username]] <- user_scores
@@ -79,13 +95,13 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
 
     return(list(
       success = TRUE,
-      updated_scores = updated_scores,
+      data = updated_scores,
       message = paste("Score saved for user:", username)
     ))
   }, error = function(e) {
     return(list(
       success = FALSE,
-      updated_scores = NULL,
+      data = NULL,
       message = paste("Error saving score:", e$message)
     ))
   })
