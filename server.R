@@ -29,24 +29,10 @@ shinyServer(function(input, output, session){
   }
 
   # Initialize reactive states
-  user_state_init <- state_initialize_user(qa_data, score_global, app_error)
-  user_state <- reactiveValues() 
-  for(name in names(user_state_init)) {
-    user_state[[name]] <- user_state_init[[name]]
-  }
+  user_state <- state_create_reactive(state_initialize_user(qa_data, score_global, app_error))
+  config_state <- state_create_reactive(state_initialize_config(qa_data))
+  learning_state <- state_create_reactive(state_initialize_learning())
 
-  config_state_init <- state_initialize_config(qa_data)
-  config_state <- reactiveValues()
-  for(name in names(config_state_init)) {
-    config_state[[name]] <- config_state_init[[name]]
-  }
-
-  learning_state_init <- state_initialize_learning()
-  learning_state <- reactiveValues()
-  for(name in names(learning_state_init)) {
-    learning_state[[name]] <- learning_state_init[[name]]
-  }
-  
   # =============== UI RENDERING ====================
   # Static UI element rendering
   # =================================================

@@ -35,3 +35,11 @@ state_initialize_learning <- function() {
     correct_answer = ""
   )
 }
+
+state_create_reactive <- function(init_data) {
+  rv <- reactiveValues()
+  for(name in names(init_data)) {
+    rv[[name]] <- init_data[[name]]
+  }
+  return(rv)
+}
