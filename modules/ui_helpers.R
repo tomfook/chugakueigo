@@ -101,13 +101,13 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
 #=======
 ui_observe_user_selection <- function(session, qa){
   observe({
-    updateSelectInput(session, "select.user", choices = qa$namelist)
+    updateSelectInput(session, "select.user", choices = qa$user_names)
   })
 }
 
 ui_observe_delete_choices <- function(session, qa) {
   observe({
-    delete_choices <- qa$namelist[qa$namelist != DEFAULTS$USER]
+    delete_choices <- qa$user_names[qa$user_names != DEFAULTS$USER]
     updateSelectInput(
       session,
       "select.userdelete",

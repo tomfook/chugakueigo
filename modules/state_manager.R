@@ -7,7 +7,7 @@ state_initialize <- function(main_data, score_global, app_error) {
 
     #user
     user = DEFAULTS$USER,
-    namelist = names(score_global),
+    user_names = names(score_global),
     score.all = score_global,
     score = if(DEFAULTS$USER %in% names(score_global)) score_global[[DEFAULTS$USER]] else rep(0L, nrow(main_data))
     )

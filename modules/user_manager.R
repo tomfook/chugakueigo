@@ -39,7 +39,7 @@ user_create_scores <- function(username, current_scores, question_count){
   return(list(
     success = TRUE,
     updated_scores = updated_scores,
-    updated_namelist = names(updated_scores),
+    updated_user_names = names(updated_scores),
     message = paste("User", username, "was added.")
   ))
 }
@@ -55,7 +55,7 @@ user_add_new <- function(username, qa_state, main_data) {
   }
 
   qa_state$score.all <- result$updated_scores
-  qa_state$namelist <- result$updated_namelist
+  qa_state$user_names <- result$updated_user_names
 
   return(list(success = TRUE, message = result$message))
 }
@@ -75,7 +75,7 @@ user_remove_from_scores <- function(username, current_scores){
   return(list(
     success = TRUE,
     updated_scores = updated_scores,
-    updated_namelist = names(updated_scores),
+    updated_user_names = names(updated_scores),
     message = paste("User", username, "was permanently removed.")
   ))
 }
@@ -89,7 +89,7 @@ user_remove <- function(username, qa_state) {
     write.table(result$updated_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
 
     qa_state$score.all <- result$updated_scores
-    qa_state$namelist <- result$updated_namelist
+    qa_state$user_names <- result$updated_user_names
 
     return(list(success = TRUE, message = result$message))
   }, error = function(e) {
