@@ -1,9 +1,9 @@
 library(dplyr)
 source("constants.R")
 
-data_read_score <- function(qa, path = "data/score.csv") {
+data_read_score <- function(qa_data, path = "data/score.csv") {
   if (!file.exists(path)) {
-    score <- data.frame(guest = rep(0L, nrow(qa)))
+    score <- data.frame(guest = rep(0L, nrow(qa_data)))
     write.table(score, path, row.names = FALSE, sep = ",")
     return(list(success = TRUE, data = score, message = "Score file created as it didn't exist"))
   }
@@ -14,8 +14,8 @@ data_read_score <- function(qa, path = "data/score.csv") {
     return(list(success = FALSE, data = NULL, message = paste("Error reading score file:", e$message)))
   })
 
-  if (nrow(qa) > nrow(score)) {
-    missing_rows <- nrow(qa) - nrow(score)
+  if (nrow(qa_data) > nrow(score)) {
+    missing_rows <- nrow(qa_data) - nrow(score)
     padding_data <- list()
     for (col_name in names(score)) {
       padding_data[[col_name]] <- rep(0L, missing_rows)
@@ -37,7 +37,7 @@ data_initialize <- function() {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa = qa_data, path = PATHS$SCORES)
+    score_result <- data_read_score(qa_data = qa_data, path = PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
@@ -65,7 +65,7 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
   }
 
   tryCatch({
-    score_result <- data_read_score(qa = qa_data, path = PATHS$SCORES)
+    score_result <- data_read_score(qa_data = qa_data, path = PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, updated_scores = NULL, message = score_result$message))
     }
