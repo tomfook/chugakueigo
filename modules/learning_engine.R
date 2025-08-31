@@ -53,7 +53,7 @@ learning_new_question <- function(main, learning_session_state, config_state) {
   learning_session_state$question <- next_q$question
   learning_session_state$correct_answer <- next_q$answer
   learning_session_state$answer <- ""
-  learning_session_state$trial <- learning_session_state$trial + 1L
+  learning_session_state$question_count <- learning_session_state$question_count + 1L
   return(learning_session_state)
 }
 
@@ -81,7 +81,7 @@ learning_update_probability <- function(config_state, qa, learning_session_state
 
 learning_start_session <- function(main_data, config_state, learning_session_state) {
   learning_session_state$start <- TRUE
-  learning_session_state$trial <- 0L
+  learning_session_state$question_count <- 0L
   learning_session_state$correct_count <- 0L
   learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
   return(learning_session_state)

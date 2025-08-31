@@ -25,7 +25,7 @@ state_initialize_config <- function(main_data) {
 
 state_initialize_learning_session <- function() {
   list(
-    trial = 0L,
+    question_count = 0L,
     correct_count = 0L,
     start = FALSE,
     index = NULL,

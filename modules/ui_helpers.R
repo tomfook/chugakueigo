@@ -8,14 +8,14 @@ ui_render_welcome <- function(input, qa, learning_session_state) {
   renderText({
     if(learning_session_state$start) {
       trial.prefix <- dplyr::case_when(
-       learning_session_state$trial %in% 11:13 ~ "th",
-       learning_session_state$trial %% 10 == 1 ~ "st",
-       learning_session_state$trial %% 10 == 2 ~ "nd",
-       learning_session_state$trial %% 10 == 3 ~ "rd",
+       learning_session_state$question_count %in% 11:13 ~ "th",
+       learning_session_state$question_count %% 10 == 1 ~ "st",
+       learning_session_state$question_count %% 10 == 2 ~ "nd",
+       learning_session_state$question_count %% 10 == 3 ~ "rd",
        TRUE ~ "th"
      )
       paste0(
-	     input$select.user, "'s ", learning_session_state$trial, trial.prefix, " Trial", ", (OK: ", learning_session_state$correct_count, ")"
+	     input$select.user, "'s ", learning_session_state$question_count, trial.prefix, " Trial", ", (OK: ", learning_session_state$correct_count, ")"
 	     )
     } else {
       paste("Not started. Press the start button")
