@@ -118,7 +118,7 @@ shinyServer(function(input, output, session){
     learning_session_state$answer <- learning_session_state$answer.remember
   }) 
   observeEvent(input$action.ok,{
-    result <- learning_handle_ok_feedback(qa, main, config_state, learning_session_state)
+    result <- learning_handle_feedback(qa, main, config_state, learning_session_state, is_correct = TRUE)
     qa <- result$updated_qa
     learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
@@ -126,7 +126,7 @@ shinyServer(function(input, output, session){
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_ng_feedback(qa, main, config_state, learning_session_state)
+    result <- learning_handle_feedback(qa, main, config_state, learning_session_state, is_correct = FALSE)
     qa <- result$updated_qa
     learning_session_state <- result$updated_learning_session_state
     if (!result$success) {

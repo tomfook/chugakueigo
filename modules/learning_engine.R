@@ -105,11 +105,3 @@ learning_handle_feedback <- function(qa, main_data, config_state, learning_sessi
 
   return(list(success = TRUE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = ""))
 }
-
-learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_session_state) {
-  learning_handle_feedback(qa, main_data, config_state, learning_session_state, is_correct = TRUE)
-}
-
-learning_handle_ng_feedback <- function(qa, main_data, config_state, learning_session_state) {
-  learning_handle_feedback(qa, main_data, config_state, learning_session_state, is_correct = FALSE)
-}
