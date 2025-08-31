@@ -43,7 +43,7 @@ shinyServer(function(input, output, session){
 
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
-  output$html.action.start <- ui_render_action_start(qa$start, app_error)
+  output$html.action.start <- ui_render_action_start(learning_session_state$start, app_error)
   output$html.action.save <- ui_render_action_save(identical(qa$score.all[[input$select.user]], qa$score), qa$app_error)
 
 # user selection update
@@ -117,6 +117,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
+    learning_session_state$start <- TRUE
     learning_session_state$trial <- 0L
     learning_session_state$ok <- 0L
     qa <- learning_start_session(qa, main, config_state)
@@ -125,7 +126,7 @@ shinyServer(function(input, output, session){
     qa$answer <- qa$answer.remember
   }) 
   observeEvent(input$action.ok,{
-    result <- learning_handle_ok_feedback(qa, main, config_state)
+    result <- learning_handle_ok_feedback(qa, main, config_state, learning_session_state)
     qa <- result$updated_qa
     if (result$success) {
       learning_session_state$trial <- learning_session_state$trial + 1L
@@ -136,7 +137,7 @@ shinyServer(function(input, output, session){
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_ng_feedback(qa, main, config_state)
+    result <- learning_handle_ng_feedback(qa, main, config_state, learning_session_state)
     qa <- result$updated_qa
     if (result$success) {
       learning_session_state$trial <- learning_session_state$trial + 1L

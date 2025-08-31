@@ -4,7 +4,6 @@ state_initialize <- function(main_data, score_global, app_error) {
   list(
     #system
     app_error = app_error,
-    start = FALSE,
 
     #user
     user = DEFAULTS$USER,
@@ -17,7 +16,6 @@ state_initialize <- function(main_data, score_global, app_error) {
     question = "",
     answer = "",
     answer.remember = ""
-
     )
 }
 
@@ -32,6 +30,7 @@ state_initialize_config <- function(main_data) {
 state_initialize_learning_session <- function() {
   list(
     trial = 0L,
-    ok = 0L
+    ok = 0L,
+    start = FALSE
   )
 }

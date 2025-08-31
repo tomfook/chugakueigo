@@ -76,13 +76,12 @@ learning_update_range_and_probability <- function(config_state, qa, slider_range
 }
 
 learning_start_session <- function(qa, main_data, config_state) {
-  qa$start <- TRUE
   qa <- learning_new_question(main_data, qa, config_state)
   return(qa)
 }
 
-learning_handle_ok_feedback <- function(qa, main_data, config_state) {
-  if (!qa$start) {
+learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_session_state) {
+  if (!learning_session_state$start) {
     return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
   }
 
@@ -96,8 +95,8 @@ learning_handle_ok_feedback <- function(qa, main_data, config_state) {
   return(list(success = TRUE, updated_qa = qa, message = ""))
 }
 
-learning_handle_ng_feedback <- function(qa, main_data, config_state) {
-  if (!qa$start) {
+learning_handle_ng_feedback <- function(qa, main_data, config_state, learning_session_state) {
+  if (!learning_session_state$start) {
     return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
   }
 

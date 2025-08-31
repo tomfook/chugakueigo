@@ -6,7 +6,7 @@ source("constants.R")
 #==============
 ui_render_welcome <- function(input, qa, learning_session_state) {
   renderText({
-    if(qa$start) {
+    if(learning_session_state$start) {
       trial.prefix <- dplyr::case_when(
        learning_session_state$trial %in% 11:13 ~ "th",
        learning_session_state$trial %% 10 == 1 ~ "st",
