@@ -51,7 +51,7 @@ learning_new_question <- function(main, learning_session_state, config_state) {
   next_q <- learning_select_next_question(main, config_state)
   learning_session_state$index <- next_q$index
   learning_session_state$question <- next_q$question
-  learning_session_state$answer.remember <- next_q$answer
+  learning_session_state$correct_answer <- next_q$answer
   learning_session_state$answer <- ""
   learning_session_state$trial <- learning_session_state$trial + 1L
   return(learning_session_state)

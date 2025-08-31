@@ -115,7 +115,7 @@ shinyServer(function(input, output, session){
     learning_session_state <- learning_start_session(main, config_state, learning_session_state)
   })
   observeEvent(input$action.answer,{
-    learning_session_state$answer <- learning_session_state$answer.remember
+    learning_session_state$answer <- learning_session_state$correct_answer
   }) 
   observeEvent(input$action.ok,{
     result <- learning_handle_feedback(qa, main, config_state, learning_session_state, is_correct = TRUE)

@@ -31,6 +31,6 @@ state_initialize_learning_session <- function() {
     index = NULL,
     question = "",
     answer = "",
-    answer.remember = ""
+    correct_answer = ""
   )
 }
