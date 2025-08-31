@@ -23,10 +23,10 @@ shinyServer(function(input, output, session){
     score_global <- init_result$data$score_global
   }
 
-  qa_init <- state_initialize(main, score_global, app_error)
+  user_state_init <- state_initialize_user(main, score_global, app_error)
   user_state <- reactiveValues() 
-  for(name in names(qa_init)) {
-    user_state[[name]] <- qa_init[[name]]
+  for(name in names(user_state_init)) {
+    user_state[[name]] <- user_state_init[[name]]
   }
 
   config_state_init <- state_initialize_config(main)

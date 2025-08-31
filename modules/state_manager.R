@@ -1,11 +1,8 @@
 source("constants.R")
 
-state_initialize <- function(main_data, score_global, app_error) {
+state_initialize_user <- function(main_data, score_global, app_error) {
   list(
-    #system
     app_error = app_error,
-
-    #user
     user = DEFAULTS$USER,
     user_names = names(score_global),
     all_user_scores = score_global,
