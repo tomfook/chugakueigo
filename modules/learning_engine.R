@@ -75,14 +75,14 @@ learning_update_range <- function(config_state, slider_range, main_data) {
 
 learning_update_probability <- function(config_state, qa, learning_session_state) {
   score_range <- qa$score[seq(config_state$range_min, config_state$range_max)]
-  config_state$probabilities <- (abs(config_state$prob_base - learning_session_state$ok * SCORING$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
+  config_state$probabilities <- (abs(config_state$prob_base - learning_session_state$correct_count * SCORING$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
   return(config_state)
 }
 
 learning_start_session <- function(main_data, config_state, learning_session_state) {
   learning_session_state$start <- TRUE
   learning_session_state$trial <- 0L
-  learning_session_state$ok <- 0L
+  learning_session_state$correct_count <- 0L
   learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
   return(learning_session_state)
 }
@@ -98,7 +98,7 @@ learning_handle_feedback <- function(qa, main_data, config_state, learning_sessi
 
   if (is_correct) {
     qa$score[learning_session_state$index] <- qa$score[learning_session_state$index] + 1L
-    learning_session_state$ok <- learning_session_state$ok + 1L
+    learning_session_state$correct_count <- learning_session_state$correct_count + 1L
   }
 
   learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)

@@ -99,7 +99,7 @@ user_remove <- function(username, qa_state) {
 
 user_switch_reset_state <- function(qa_state, new_username) {
   qa_state$trial <- 0L
-  qa_state$ok <- 0L
+  qa_state$correct_count <- 0L
   qa_state$start <- FALSE
   qa_state$user <- new_username
   qa_state$score <- qa_state$score.all[[new_username]]
