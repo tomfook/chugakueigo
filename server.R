@@ -103,13 +103,8 @@ shinyServer(function(input, output, session){
   observe({
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
-    config_state <- learning_update_range_and_probability(
-      config_state = config_state,
-      qa = qa,
-      slider_range = input$slider.qrange,
-      main_data = main,
-      learning_session_state = learning_session_state
-    )
+    config_state <- learning_update_range(config_state, input$slider.qrange, main)
+    config_state <- learning_update_probability(config_state, qa, learning_session_state)
   })
 
   observeEvent(input$action.start,{ 
