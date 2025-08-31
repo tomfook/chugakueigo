@@ -44,7 +44,7 @@ shinyServer(function(input, output, session){
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
   output$html.action.start <- ui_render_action_start(learning_session_state$start, app_error)
-  output$html.action.save <- ui_render_action_save(identical(qa$score.all[[input$select.user]], qa$score), qa$app_error)
+  output$html.action.save <- ui_render_action_save(identical(qa$all_user_scores[[input$select.user]], qa$score), qa$app_error)
 
 # user selection update
   ui_observe_user_selection(session, qa)
@@ -149,7 +149,7 @@ shinyServer(function(input, output, session){
       )
 
     if (result$success) {
-      qa$score.all <- result$updated_scores
+      qa$all_user_scores <- result$updated_scores
     }
 
     ui_show_result(result)

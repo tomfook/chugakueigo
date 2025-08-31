@@ -49,12 +49,12 @@ user_add_new <- function(username, qa_state, main_data) {
     return(list(success = FALSE, message = validation$message))
   }
 
-  result <- user_create_scores(username, qa_state$score.all, nrow(main_data))
+  result <- user_create_scores(username, qa_state$all_user_scores, nrow(main_data))
   if (!result$success) {
     return(result)
   }
 
-  qa_state$score.all <- result$updated_scores
+  qa_state$all_user_scores <- result$updated_scores
   qa_state$user_names <- result$updated_user_names
 
   return(list(success = TRUE, message = result$message))
@@ -80,7 +80,7 @@ user_remove_from_scores <- function(username, current_scores){
   ))
 }
 user_remove <- function(username, qa_state) {
-  result <- user_remove_from_scores(username, qa_state$score.all)
+  result <- user_remove_from_scores(username, qa_state$all_user_scores)
   if (!result$success) {
     return(result)
   }
@@ -88,7 +88,7 @@ user_remove <- function(username, qa_state) {
   tryCatch({
     write.table(result$updated_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
 
-    qa_state$score.all <- result$updated_scores
+    qa_state$all_user_scores <- result$updated_scores
     qa_state$user_names <- result$updated_user_names
 
     return(list(success = TRUE, message = result$message))
@@ -102,7 +102,7 @@ user_switch_reset_state <- function(qa_state, new_username) {
   qa_state$correct_count <- 0L
   qa_state$start <- FALSE
   qa_state$user <- new_username
-  qa_state$score <- qa_state$score.all[[new_username]]
+  qa_state$score <- qa_state$all_user_scores[[new_username]]
   qa_state$index <- NULL
   qa_state$question <- ""
   qa_state$answer <- ""
