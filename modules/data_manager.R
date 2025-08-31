@@ -15,9 +15,14 @@ data_read_score <- function(qa, path = "data/score.csv") {
   })
 
   if (nrow(qa) > nrow(score)) {
-    zero.score <- head(score, nrow(qa) - nrow(score))
-    zero.score[] <- 0L
-    score <- bind_rows(score, zero.score)
+    missing_rows <- nrow(qa) - nrow(score)
+    padding_data <- list()
+    for (col_name in names(score)) {
+      padding_data[[col_name]] <- rep(0L, missing_rows)
+    }
+
+    padding_rows <- data.frame(padding_data)
+    score <- bind_rows(score, padding_rows)
   }
 
   return(list(success = TRUE, data = score, message = "Score data loaded successfully"))
