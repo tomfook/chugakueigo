@@ -4,7 +4,7 @@ source("constants.R")
 #==============
 # UI render functions 
 #==============
-ui_render_welcome <- function(input, qa, learning_session_state) {
+ui_render_welcome <- function(input, user_state, learning_session_state) {
   renderText({
     if(learning_session_state$start) {
       trial.prefix <- dplyr::case_when(
@@ -23,17 +23,17 @@ ui_render_welcome <- function(input, qa, learning_session_state) {
   })
 }
 
-ui_render_score_total<- function(qa) {
+ui_render_score_total<- function(user_state) {
   renderText({
-    total <- sum(qa$score)
+    total <- sum(user_state$score)
     paste("Total score:", total)
   })
 }
 
-ui_render_score_weak <- function(main, qa, limit = 5) {
+ui_render_score_weak <- function(main, user_state, limit = 5) {
   renderTable({
     main %>%
-      mutate(score = qa$score) %>%
+      mutate(score = user_state$score) %>%
       arrange(score) %>%
       head(limit)
   })
@@ -48,10 +48,10 @@ ui_render_qanda <- function(learning_session_state) {
   })
 }
 
-ui_render_questions_table <- function(main, qa) {
+ui_render_questions_table <- function(main, user_state) {
   DT::renderDataTable({
     main %>%
-      mutate(score = qa$score) %>%
+      mutate(score = user_state$score) %>%
       select(question, answer, score)
   })
 }
@@ -99,15 +99,15 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
 #=======
 # UI Observer Functions 
 #=======
-ui_observe_user_selection <- function(session, qa){
+ui_observe_user_selection <- function(session, user_state){
   observe({
-    updateSelectInput(session, "select.user", choices = qa$user_names)
+    updateSelectInput(session, "select.user", choices = user_state$user_names)
   })
 }
 
-ui_observe_delete_choices <- function(session, qa) {
+ui_observe_delete_choices <- function(session, user_state) {
   observe({
-    delete_choices <- qa$user_names[qa$user_names != DEFAULTS$USER]
+    delete_choices <- user_state$user_names[user_state$user_names != DEFAULTS$USER]
     updateSelectInput(
       session,
       "select.userdelete",

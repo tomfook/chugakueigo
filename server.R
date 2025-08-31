@@ -24,9 +24,9 @@ shinyServer(function(input, output, session){
   }
 
   qa_init <- state_initialize(main, score_global, app_error)
-  qa <- reactiveValues() 
+  user_state <- reactiveValues() 
   for(name in names(qa_init)) {
-    qa[[name]] <- qa_init[[name]]
+    user_state[[name]] <- qa_init[[name]]
   }
 
   config_state_init <- state_initialize_config(main)
@@ -44,10 +44,10 @@ shinyServer(function(input, output, session){
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
   output$html.action.start <- ui_render_action_start(learning_session_state$start, app_error)
-  output$html.action.save <- ui_render_action_save(identical(qa$all_user_scores[[input$select.user]], qa$score), qa$app_error)
+  output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score), user_state$app_error)
 
 # user selection update
-  ui_observe_user_selection(session, qa)
+  ui_observe_user_selection(session, user_state)
 
 # useradd
   observeEvent(input$action.useradd,{
@@ -55,7 +55,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    result <- user_add_new(input$textinp.useradd, qa, main)
+    result <- user_add_new(input$textinp.useradd, user_state, main)
     ui_show_result(result)
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
@@ -63,7 +63,7 @@ shinyServer(function(input, output, session){
   })
 
 #remove user
-  ui_observe_delete_choices(session, qa)
+  ui_observe_delete_choices(session, user_state)
 
   observeEvent(input$action.userdelete, {
     if (app_error) {
@@ -88,7 +88,7 @@ shinyServer(function(input, output, session){
   })
   observeEvent(input$confirm_delete, {
     selected_user <- input$select.userdelete
-    result <- user_remove(selected_user, qa)
+    result <- user_remove(selected_user, user_state)
     ui_show_result(result)
     removeModal()
   })
@@ -96,7 +96,7 @@ shinyServer(function(input, output, session){
 
 #user account
   observeEvent(input$select.user,{
-    qa <- user_switch_reset_state(qa, input$select.user)
+    user_state <- user_switch_reset_state(user_state, input$select.user)
   }) 
 
 #learning
@@ -104,7 +104,7 @@ shinyServer(function(input, output, session){
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range(config_state, input$slider.qrange, main)
-    config_state <- learning_update_probability(config_state, qa, learning_session_state)
+    config_state <- learning_update_probability(config_state, user_state, learning_session_state)
   })
 
   observeEvent(input$action.start,{ 
@@ -118,16 +118,16 @@ shinyServer(function(input, output, session){
     learning_session_state$answer <- learning_session_state$correct_answer
   }) 
   observeEvent(input$action.ok,{
-    result <- learning_handle_feedback(qa, main, config_state, learning_session_state, is_correct = TRUE)
-    qa <- result$updated_qa
+    result <- learning_handle_feedback(user_state, main, config_state, learning_session_state, is_correct = TRUE)
+    user_state <- result$updated_user_state
     learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_feedback(qa, main, config_state, learning_session_state, is_correct = FALSE)
-    qa <- result$updated_qa
+    result <- learning_handle_feedback(user_state, main, config_state, learning_session_state, is_correct = FALSE)
+    user_state <- result$updated_user_state
     learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
       ui_show_result(result)
@@ -143,27 +143,27 @@ shinyServer(function(input, output, session){
     }
     result <- data_save_user_score(
       username = input$select.user,
-      current_user = qa$user,
-      user_scores = qa$score,
+      current_user = user_state$user,
+      user_scores = user_state$score,
       qa_data = main
       )
 
     if (result$success) {
-      qa$all_user_scores <- result$updated_scores
+      user_state$all_user_scores <- result$updated_scores
     }
 
     ui_show_result(result)
   }) 
 
 #current status
-  output$welcome <- ui_render_welcome(input, qa, learning_session_state)
+  output$welcome <- ui_render_welcome(input, user_state, learning_session_state)
 
 #score
-  output$score.total <- ui_render_score_total(qa)
-  output$score.weak <- ui_render_score_weak(main, qa)
+  output$score.total <- ui_render_score_total(user_state)
+  output$score.weak <- ui_render_score_weak(main, user_state)
 
 #questions
-  output$dt.questions <- ui_render_questions_table(main, qa)
+  output$dt.questions <- ui_render_questions_table(main, user_state)
 
 })
 

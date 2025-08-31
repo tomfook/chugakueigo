@@ -73,8 +73,8 @@ learning_update_range <- function(config_state, slider_range, main_data) {
   return(config_state)
 }
 
-learning_update_probability <- function(config_state, qa, learning_session_state) {
-  score_range <- qa$score[seq(config_state$range_min, config_state$range_max)]
+learning_update_probability <- function(config_state, user_state, learning_session_state) {
+  score_range <- user_state$score[seq(config_state$range_min, config_state$range_max)]
   config_state$probabilities <- (abs(config_state$prob_base - learning_session_state$correct_count * SCORING$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
   return(config_state)
 }
@@ -87,21 +87,21 @@ learning_start_session <- function(main_data, config_state, learning_session_sta
   return(learning_session_state)
 }
 
-learning_handle_feedback <- function(qa, main_data, config_state, learning_session_state, is_correct) {
+learning_handle_feedback <- function(user_state, main_data, config_state, learning_session_state, is_correct) {
   if (!learning_session_state$start) {
-    return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Learning not started"))
+    return(list(success = FALSE, updated_user_state = user_state, updated_learning_session_state = learning_session_state, message = "Learning not started"))
   }
 
   if (learning_session_state$answer == "") {
-    return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
+    return(list(success = FALSE, updated_user_state = user_state, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
   }
 
   if (is_correct) {
-    qa$score[learning_session_state$index] <- qa$score[learning_session_state$index] + 1L
+    user_state$score[learning_session_state$index] <- user_state$score[learning_session_state$index] + 1L
     learning_session_state$correct_count <- learning_session_state$correct_count + 1L
   }
 
   learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
 
-  return(list(success = TRUE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = ""))
+  return(list(success = TRUE, updated_user_state = user_state, updated_learning_session_state = learning_session_state, message = ""))
 }
