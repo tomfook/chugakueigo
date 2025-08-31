@@ -47,13 +47,14 @@ learning_select_next_question <- function(main, config_state) {
     )
 }
 
-learning_new_question <- function(main, qa_state, config_state) {
+learning_new_question <- function(main, learning_session_state, config_state) {
   next_q <- learning_select_next_question(main, config_state)
-  qa_state$index <- next_q$index
-  qa_state$question <- next_q$question
-  qa_state$answer.remember <- next_q$answer
-  qa_state$answer <- ""
-  return(qa_state)
+  learning_session_state$index <- next_q$index
+  learning_session_state$question <- next_q$question
+  learning_session_state$answer.remember <- next_q$answer
+  learning_session_state$answer <- ""
+  learning_session_state$trial <- learning_session_state$trial + 1L
+  return(learning_session_state)
 }
 
 learning_update_range_and_probability <- function(config_state, qa, slider_range, prob_base, zero_limit, main_data, learning_session_state) {
@@ -75,36 +76,40 @@ learning_update_range_and_probability <- function(config_state, qa, slider_range
 
 }
 
-learning_start_session <- function(qa, main_data, config_state) {
-  qa <- learning_new_question(main_data, qa, config_state)
-  return(qa)
+learning_start_session <- function(main_data, config_state, learning_session_state) {
+  learning_session_state$start <- TRUE
+  learning_session_state$trial <- 0L
+  learning_session_state$ok <- 0L
+  learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
+  return(learning_session_state)
 }
 
 learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_session_state) {
   if (!learning_session_state$start) {
-    return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
+    return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Learning not started"))
   }
 
-  if (qa$answer == "") {
-    return(list(success = FALSE, updated_qa = qa, message = "Confirm Answer!"))
+  if (learning_session_state$answer == "") {
+    return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
   }
 
-  qa$score[qa$index] <- qa$score[qa$index] + 1L
-  qa <- learning_new_question(main_data, qa, config_state)
+  qa$score[learning_session_state$index] <- qa$score[learning_session_state$index] + 1L
+  learning_session_state$ok <- learning_session_state$ok + 1L
+  learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
 
-  return(list(success = TRUE, updated_qa = qa, message = ""))
+  return(list(success = TRUE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = ""))
 }
 
-learning_handle_ng_feedback <- function(qa, main_data, config_state, learning_session_state) {
+learning_handle_ng_feedback <- function(main_data, config_state, learning_session_state) {
   if (!learning_session_state$start) {
-    return(list(success = FALSE, updated_qa = qa, message = "Learning not started"))
+    return(list(success = FALSE, updated_learning_session_state = learning_session_state, message = "Learning not started"))
   }
 
-  if (qa$answer == "") {
-    return(list(success = FALSE, updated_qa = qa, message = "Confirm Answer!"))
+  if (learning_session_state$answer == "") {
+    return(list(success = FALSE, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
   }
 
-  qa <- learning_new_question(main_data, qa, config_state)
+  learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
 
-  return(list(success = TRUE, updated_qa = qa, message = ""))
+  return(list(success = TRUE, updated_learning_session_state = learning_session_state, message = ""))
 }

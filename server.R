@@ -117,36 +117,27 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
-    learning_session_state$start <- TRUE
-    learning_session_state$trial <- 0L
-    learning_session_state$ok <- 0L
-    qa <- learning_start_session(qa, main, config_state)
+    learning_session_state <- learning_start_session(main, config_state, learning_session_state)
   })
   observeEvent(input$action.answer,{
-    qa$answer <- qa$answer.remember
+    learning_session_state$answer <- learning_session_state$answer.remember
   }) 
   observeEvent(input$action.ok,{
     result <- learning_handle_ok_feedback(qa, main, config_state, learning_session_state)
     qa <- result$updated_qa
-    if (result$success) {
-      learning_session_state$trial <- learning_session_state$trial + 1L
-      learning_session_state$ok <- learning_session_state$ok + 1L
-    }
+    learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_ng_feedback(qa, main, config_state, learning_session_state)
-    qa <- result$updated_qa
-    if (result$success) {
-      learning_session_state$trial <- learning_session_state$trial + 1L
-    }
+    result <- learning_handle_ng_feedback(main, config_state, learning_session_state)
+    learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
-  output$qanda <- ui_render_qanda(qa)
+  output$qanda <- ui_render_qanda(learning_session_state)
 
 #save score
   observeEvent(input$action.save,{ 

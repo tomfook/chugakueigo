@@ -9,13 +9,7 @@ state_initialize <- function(main_data, score_global, app_error) {
     user = DEFAULTS$USER,
     namelist = names(score_global),
     score.all = score_global,
-    score = if(DEFAULTS$USER %in% names(score_global)) score_global[[DEFAULTS$USER]] else rep(0L, nrow(main_data)),
-
-    #learning
-    index = NULL,
-    question = "",
-    answer = "",
-    answer.remember = ""
+    score = if(DEFAULTS$USER %in% names(score_global)) score_global[[DEFAULTS$USER]] else rep(0L, nrow(main_data))
     )
 }
 
@@ -31,6 +25,10 @@ state_initialize_learning_session <- function() {
   list(
     trial = 0L,
     ok = 0L,
-    start = FALSE
+    start = FALSE,
+    index = NULL,
+    question = "",
+    answer = "",
+    answer.remember = ""
   )
 }

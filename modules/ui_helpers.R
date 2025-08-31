@@ -39,11 +39,11 @@ ui_render_score_weak <- function(main, qa, limit = 5) {
   })
 }
 
-ui_render_qanda <- function(qa) {
+ui_render_qanda <- function(learning_session_state) {
   renderTable({
     tibble::tibble(
       ` ` = c("Q.", "A."),
-      sentence = paste0(c(qa$question, qa$answer), "")
+      sentence = paste0(c(learning_session_state$question, learning_session_state$answer), "")
     )
   })
 }
