@@ -31,14 +31,14 @@ learning_shuffle_question <- function(q, a){
     return(list(q = qa_mod$q, a = qa_mod$a))
 }
 
-learning_select_next_question <- function(main, config_state) {
+learning_select_next_question <- function(qa_data, config_state) {
   question_index <- sample(
     config_state$range_max - config_state$range_min + 1L,
     1,
     prob = config_state$probabilities
   ) + (config_state$range_min - 1L)
 
-    shuffled_qa <- learning_shuffle_question(main$question[question_index], main$answer[question_index])
+    shuffled_qa <- learning_shuffle_question(qa_data$question[question_index], qa_data$answer[question_index])
 
     list(
       index = question_index,
@@ -47,8 +47,8 @@ learning_select_next_question <- function(main, config_state) {
     )
 }
 
-learning_new_question <- function(main, learning_state, config_state) {
-  next_q <- learning_select_next_question(main, config_state)
+learning_new_question <- function(qa_data, learning_state, config_state) {
+  next_q <- learning_select_next_question(qa_data, config_state)
   learning_state$index <- next_q$index
   learning_state$question <- next_q$question
   learning_state$correct_answer <- next_q$answer
@@ -57,7 +57,7 @@ learning_new_question <- function(main, learning_state, config_state) {
   return(learning_state)
 }
 
-learning_update_range <- function(config_state, slider_range, main_data) {
+learning_update_range <- function(config_state, slider_range, qa_data) {
   if(is.null(slider_range[1])) {
     config_state$range_min <- 1L
   } else {
@@ -65,7 +65,7 @@ learning_update_range <- function(config_state, slider_range, main_data) {
   }
 
   if(is.null(slider_range[2])) {
-    config_state$range_max <- nrow(main_data)
+    config_state$range_max <- nrow(qa_data)
   } else {
     config_state$range_max <- slider_range[2]
   }
@@ -79,15 +79,15 @@ learning_update_probability <- function(config_state, user_state, learning_state
   return(config_state)
 }
 
-learning_start_session <- function(main_data, config_state, learning_state) {
+learning_start_session <- function(qa_data, config_state, learning_state) {
   learning_state$start <- TRUE
   learning_state$question_count <- 0L
   learning_state$correct_count <- 0L
-  learning_state <- learning_new_question(main_data, learning_state, config_state)
+  learning_state <- learning_new_question(qa_data, learning_state, config_state)
   return(learning_state)
 }
 
-learning_handle_feedback <- function(user_state, main_data, config_state, learning_state, is_correct) {
+learning_handle_feedback <- function(user_state, qa_data, config_state, learning_state, is_correct) {
   if (!learning_state$start) {
     return(list(success = FALSE, updated_user_state = user_state, updated_learning_state = learning_state, message = "Learning not started"))
   }
@@ -101,7 +101,7 @@ learning_handle_feedback <- function(user_state, main_data, config_state, learni
     learning_state$correct_count <- learning_state$correct_count + 1L
   }
 
-  learning_state <- learning_new_question(main_data, learning_state, config_state)
+  learning_state <- learning_new_question(qa_data, learning_state, config_state)
 
   return(list(success = TRUE, updated_user_state = user_state, updated_learning_state = learning_state, message = ""))
 }

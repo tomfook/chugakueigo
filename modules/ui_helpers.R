@@ -30,9 +30,9 @@ ui_render_score_total<- function(user_state) {
   })
 }
 
-ui_render_score_weak <- function(main, user_state, limit = 5) {
+ui_render_score_weak <- function(qa_data, user_state, limit = 5) {
   renderTable({
-    main %>%
+    qa_data %>%
       mutate(score = user_state$score) %>%
       arrange(score) %>%
       head(limit)
@@ -48,9 +48,9 @@ ui_render_qanda <- function(learning_state) {
   })
 }
 
-ui_render_questions_table <- function(main, user_state) {
+ui_render_questions_table <- function(qa_data, user_state) {
   DT::renderDataTable({
-    main %>%
+    qa_data %>%
       mutate(score = user_state$score) %>%
       select(question, answer, score)
   })

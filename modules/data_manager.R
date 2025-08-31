@@ -25,14 +25,14 @@ data_read_score <- function(qa, path = "data/score.csv") {
 
 data_initialize <- function() {
   tryCatch({
-    main <- read.csv(PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
+    qa_data <- read.csv(PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
       filter(question != "", answer != "")
 
-    if (nrow(main) == 0) {
+    if (nrow(qa_data) == 0) {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa = main, path = PATHS$SCORES)
+    score_result <- data_read_score(qa = qa_data, path = PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
@@ -40,11 +40,11 @@ data_initialize <- function() {
       mutate(guest = 0L) %>%
       select(guest, everything())
 
-    if (nrow(main) != nrow(score_global)) {
+    if (nrow(qa_data) != nrow(score_global)) {
       warning("Question and score data length mismatch. This has been automatically corrected.")
     }
 
-    return(list(success = TRUE, data = list(main = main, score_global = score_global), message = "Data initialized successfully"))
+    return(list(success = TRUE, data = list(qa_data = qa_data, score_global = score_global), message = "Data initialized successfully"))
   }, error = function(e) {
     return(list(success = FALSE, data = NULL, message = paste("Failed to initialize data:", e$message)))
   })

@@ -12,24 +12,24 @@ shinyServer(function(input, output, session){
   app_error <- !init_result$success
 
   if (app_error) {
-    main <- data.frame(question = "", answer = "")
+    qa_data <- data.frame(question = "", answer = "")
     score_global <- data.frame(guest = 0L)
     showNotification(
       paste("Important: Data initialization failed: ", init_result$message, "- restart app"),
       type = "error", duration = NULL
       )
   } else{
-    main <- init_result$data$main
+    qa_data <- init_result$data$qa_data
     score_global <- init_result$data$score_global
   }
 
-  user_state_init <- state_initialize_user(main, score_global, app_error)
+  user_state_init <- state_initialize_user(qa_data, score_global, app_error)
   user_state <- reactiveValues() 
   for(name in names(user_state_init)) {
     user_state[[name]] <- user_state_init[[name]]
   }
 
-  config_state_init <- state_initialize_config(main)
+  config_state_init <- state_initialize_config(qa_data)
   config_state <- reactiveValues()
   for(name in names(config_state_init)) {
     config_state[[name]] <- config_state_init[[name]]
@@ -42,7 +42,7 @@ shinyServer(function(input, output, session){
   }
 
 #render UI
-  output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
+  output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
   output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
   output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score), user_state$app_error)
 
@@ -55,7 +55,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    result <- user_add_new(input$textinp.useradd, user_state, main)
+    result <- user_add_new(input$textinp.useradd, user_state, qa_data)
     ui_show_result(result)
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
@@ -103,7 +103,7 @@ shinyServer(function(input, output, session){
   observe({
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
-    config_state <- learning_update_range(config_state, input$slider.qrange, main)
+    config_state <- learning_update_range(config_state, input$slider.qrange, qa_data)
     config_state <- learning_update_probability(config_state, user_state, learning_state)
   })
 
@@ -112,13 +112,13 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
-    learning_state <- learning_start_session(main, config_state, learning_state)
+    learning_state <- learning_start_session(qa_data, config_state, learning_state)
   })
   observeEvent(input$action.answer,{
     learning_state$answer <- learning_state$correct_answer
   }) 
   observeEvent(input$action.ok,{
-    result <- learning_handle_feedback(user_state, main, config_state, learning_state, is_correct = TRUE)
+    result <- learning_handle_feedback(user_state, qa_data, config_state, learning_state, is_correct = TRUE)
     user_state <- result$updated_user_state
     learning_state <- result$updated_learning_state
     if (!result$success) {
@@ -126,7 +126,7 @@ shinyServer(function(input, output, session){
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_feedback(user_state, main, config_state, learning_state, is_correct = FALSE)
+    result <- learning_handle_feedback(user_state, qa_data, config_state, learning_state, is_correct = FALSE)
     user_state <- result$updated_user_state
     learning_state <- result$updated_learning_state
     if (!result$success) {
@@ -145,7 +145,7 @@ shinyServer(function(input, output, session){
       username = input$select.user,
       current_user = user_state$user,
       user_scores = user_state$score,
-      qa_data = main
+      qa_data = qa_data
       )
 
     if (result$success) {
@@ -160,10 +160,10 @@ shinyServer(function(input, output, session){
 
 #score
   output$score.total <- ui_render_score_total(user_state)
-  output$score.weak <- ui_render_score_weak(main, user_state)
+  output$score.weak <- ui_render_score_weak(qa_data, user_state)
 
 #questions
-  output$dt.questions <- ui_render_questions_table(main, user_state)
+  output$dt.questions <- ui_render_questions_table(qa_data, user_state)
 
 })
 
