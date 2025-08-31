@@ -42,14 +42,14 @@ data_read_score <- function(qa_data, path = "data/score.csv") {
 
 data_initialize <- function() {
   tryCatch({
-    qa_data <- read.csv(PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
+    qa_data <- read.csv(DATA$PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
       filter(question != "", answer != "")
 
     if (nrow(qa_data) == 0) {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa_data = qa_data, path = PATHS$SCORES)
+    score_result <- data_read_score(qa_data = qa_data, path = DATA$PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
@@ -81,13 +81,13 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
   }
 
   tryCatch({
-    score_result <- data_read_score(qa_data = qa_data, path = PATHS$SCORES)
+    score_result <- data_read_score(qa_data = qa_data, path = DATA$PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = score_result$message))
     }
     existing_scores <- score_result$data
     existing_scores[[username]] <- user_scores
-    write.table(existing_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
+    write.table(existing_scores, DATA$PATHS$SCORES, row.names = FALSE, sep = ",")
 
     updated_scores <- existing_scores %>%
       mutate(guest = 0L) %>%

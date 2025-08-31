@@ -84,11 +84,11 @@ ui_render_action_start <- function(is_started, has_error = FALSE) {
   renderUI({
     if (has_error) {
       actionButton("action.start", label = "Start Learning (Disabled)",
-	style = STYLES$INACTIVE, disabled = TRUE
+	style = UI$STYLES$INACTIVE, disabled = TRUE
 	)
     } else {
       actionButton("action.start", label = "Start Learning",
-        style = if_else(is_started, STYLES$INACTIVE, STYLES$ACTIVE)
+        style = if_else(is_started, UI$STYLES$INACTIVE, UI$STYLES$ACTIVE)
     )
     }
   })
@@ -98,10 +98,10 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
   renderUI({
     if (has_error) {
       actionButton("action.save", label = "Save Score (Disabled)",
-		   style = STYLES$INACTIVE, disabled = TRUE
+		   style = UI$STYLES$INACTIVE, disabled = TRUE
 		   )
     } else {
-      actionButton("action.save", label = "Save Score", style = if_else(scores_match, STYLES$INACTIVE, STYLES$ACTIVE)
+      actionButton("action.save", label = "Save Score", style = if_else(scores_match, UI$STYLES$INACTIVE, UI$STYLES$ACTIVE)
       )
     }
   })
@@ -120,7 +120,7 @@ ui_observe_user_selection <- function(session, user_state){
 
 ui_observe_delete_choices <- function(session, user_state) {
   observe({
-    delete_choices <- user_state$user_names[user_state$user_names != DEFAULTS$USER]
+    delete_choices <- user_state$user_names[user_state$user_names != UI$DEFAULTS$USER]
     updateSelectInput(
       session,
       "select.userdelete",

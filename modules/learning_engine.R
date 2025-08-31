@@ -17,7 +17,7 @@ learning_shuffle_question <- function(q, a){
       q <- qa$q
       a <- qa$a
       
-      selected_keywords <- learning_select_shuffle_keywords(keywords, SHUFFLE$SELECTION_RATE)
+      selected_keywords <- learning_select_shuffle_keywords(keywords, LEARNING$SHUFFLE$SELECTION_RATE)
       for (i in seq_along(selected_keywords)){
          item <- selected_keywords[[i]]
          if (grepl(item$english[1], a)){
@@ -80,7 +80,7 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
 
 learning_update_probability <- function(config_state, user_state, learning_state) {
   score_range <- user_state$score[seq(config_state$range_min, config_state$range_max)]
-  config_state$probabilities <- (abs(config_state$prob_base - learning_state$correct_count * SCORING$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
+  config_state$probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
   return(config_state)
 }
 

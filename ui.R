@@ -5,7 +5,7 @@ shinyUI(fluidPage(
   titlePanel("ChugakuEigo"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("select.user", "select your name", choices = c(DEFAULTS$USER), selected = DEFAULTS$USER),
+      selectInput("select.user", "select your name", choices = c(UI$DEFAULTS$USER), selected = UI$DEFAULTS$USER),
       actionButton("action.start", label = "Start Learning"), 
       actionButton("action.save", label = "Save Score"),
       p(), 
@@ -39,8 +39,8 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
-	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = DEFAULTS$ZERO_INCLUSION, step = 1, min = 1),
-          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = DEFAULTS$BIAS_VALUE, step = DEFAULTS$BIAS_STEP, min = DEFAULTS$BIAS_MIN)
+	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = UI$DEFAULTS$ZERO_LIMIT, step = 1, min = 1),
+          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = UI$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN)
         ),
         tabPanel("questions",
           h3("Questions"),
@@ -53,7 +53,7 @@ shinyUI(fluidPage(
 	  br(), br(),
 
 	  selectInput("select.userdelete", label = "Select User to Delete", choices = NULL),
-	  actionButton("action.userdelete", label = "Delete User", style = STYLES$DANGER)
+	  actionButton("action.userdelete", label = "Delete User", style = UI$STYLES$DANGER)
         ),
         tabPanel("history", 
           h3("History"), 
