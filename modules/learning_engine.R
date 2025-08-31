@@ -57,7 +57,7 @@ learning_new_question <- function(main, learning_session_state, config_state) {
   return(learning_session_state)
 }
 
-learning_update_range_and_probability <- function(config_state, qa, slider_range, prob_base, zero_limit, main_data, learning_session_state) {
+learning_update_range_and_probability <- function(config_state, qa, slider_range, main_data, learning_session_state) {
   if(is.null(slider_range[1])) {
     config_state$range_min <- 1L
   } else {
@@ -71,7 +71,7 @@ learning_update_range_and_probability <- function(config_state, qa, slider_range
   }
 
   score_range <- qa$score[seq(config_state$range_min, config_state$range_max)]
-  config_state$probabilities <- (abs(prob_base - learning_session_state$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
+  config_state$probabilities <- (abs(config_state$prob_base - learning_session_state$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
   return(config_state)
 
 }

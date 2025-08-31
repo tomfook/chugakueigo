@@ -17,7 +17,9 @@ state_initialize_config <- function(main_data) {
   list(
     range_min = 1L,
     range_max = nrow(main_data),
-    probabilities = rep(1, nrow(main_data))
+    probabilities = rep(1, nrow(main_data)),
+    prob_base = DEFAULTS$PROB_BASE,
+    zero_limit = DEFAULTS$ZERO_LIMIT
   )
 }
 

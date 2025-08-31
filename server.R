@@ -101,12 +101,12 @@ shinyServer(function(input, output, session){
 
 #learning
   observe({
+    config_state$prob_base <- input$prob.base
+    config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range_and_probability(
       config_state = config_state,
       qa = qa,
       slider_range = input$slider.qrange,
-      prob_base = input$prob.base,
-      zero_limit = input$zeronum,
       main_data = main,
       learning_session_state = learning_session_state
     )

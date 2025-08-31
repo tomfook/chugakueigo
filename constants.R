@@ -17,7 +17,9 @@ DEFAULTS <- list(
   ZERO_INCLUSION = 5L,
   BIAS_VALUE = 1.6,
   BIAS_STEP = 0.1,
-  BIAS_MIN = 1
+  BIAS_MIN = 1,
+  PROB_BASE = 1.6,
+  ZERO_LIMIT = 5L
 )
 
 # Scoring
