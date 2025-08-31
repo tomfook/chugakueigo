@@ -10,6 +10,7 @@ source("constants.R")
 shinyServer(function(input, output, session){ 
   # =============== INITIALIZATION ==================
   # Data initialization, error handling, and state setup
+  # =================================================
 
   # Initialize core data
   init_result <- data_initialize()
@@ -48,6 +49,7 @@ shinyServer(function(input, output, session){
   
   # =============== UI RENDERING ====================
   # Static UI element rendering
+  # =================================================
 
   # Render dynamic UI elements
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
@@ -59,6 +61,7 @@ shinyServer(function(input, output, session){
 
   # =============== USER MANAGEMENT =================
   # User selection, addition, deletion handling
+  # ================================================
 
   # User account switching
   observeEvent(input$select.user,{
@@ -111,6 +114,7 @@ shinyServer(function(input, output, session){
 
   # =============== LEARNING ENGINE =================
   # Learning session, question display, feedback processing
+  # =================================================
 
   # Configuration updates
   observe({
@@ -152,6 +156,7 @@ shinyServer(function(input, output, session){
 
   # =============== DATA PERSISTENCE ================
   # Score saving and data persistence
+  # =================================================
 
   # Save user score
   observeEvent(input$action.save,{ 
@@ -175,6 +180,7 @@ shinyServer(function(input, output, session){
 
   # =============== OUTPUT RENDERING ================
   # Dynamic content output rendering
+  # =================================================
 
   # Learning interface
   output$qanda <- ui_render_qanda(learning_state)

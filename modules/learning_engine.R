@@ -1,3 +1,8 @@
+# ================================
+# LEARNING ENGINE MODULE
+# Handles question selection, text shuffling, and learning session logic
+# ================================
+
 source("constants.R")
 source("shuffle_config.R")
 

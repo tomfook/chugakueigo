@@ -1,9 +1,16 @@
+# ================================
+# UI HELPERS MODULE
+# Handles all UI rendering, observers, and notification functions
+# ================================
+
 library(dplyr)
 source("constants.R")
 
-#==============
-# UI render functions 
-#==============
+# ================================
+# Content Rendering Functions
+# Data display and content generation functions
+# ================================
+
 ui_render_welcome <- function(input, user_state, learning_state) {
   renderText({
     if(learning_state$start) {
@@ -68,6 +75,11 @@ ui_render_slider_qrange <- function(max_questions) {
   })
 }
 
+# ================================
+# Control Element Functions
+# Interactive UI element generation functions
+# ================================
+
 ui_render_action_start <- function(is_started, has_error = FALSE) {
   renderUI({
     if (has_error) {
@@ -95,10 +107,11 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
   })
 }
 
+# ================================
+# Observer Functions
+# Reactive observer functions for UI updates
+# ================================
 
-#=======
-# UI Observer Functions 
-#=======
 ui_observe_user_selection <- function(session, user_state){
   observe({
     updateSelectInput(session, "select.user", choices = user_state$user_names)
@@ -116,10 +129,11 @@ ui_observe_delete_choices <- function(session, user_state) {
   })
 }
 
+# ================================
+# Notification Functions
+# User feedback and error notification functions
+# ================================
 
-#======
-# UI Show Notification Functions
-#======
 ui_show_result <- function(result) {
   showNotification(
     result$message,

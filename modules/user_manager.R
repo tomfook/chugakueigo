@@ -1,3 +1,7 @@
+# ================================
+# USER MANAGER MODULE
+# Handles user account management: validation, creation, deletion, and state switching
+# ================================
 source("constants.R")
 
 user_validate_username <- function(username) {

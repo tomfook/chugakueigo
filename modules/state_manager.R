@@ -1,3 +1,7 @@
+# ================================
+# STATE MANAGER MODULE
+# Handles reactive state initialization for user, configuration, and learning states
+# ================================
 source("constants.R")
 
 state_initialize_user <- function(qa_data, score_global, app_error) {
