@@ -4,18 +4,18 @@ source("constants.R")
 #==============
 # UI render functions 
 #==============
-ui_render_welcome <- function(input, user_state, learning_session_state) {
+ui_render_welcome <- function(input, user_state, learning_state) {
   renderText({
-    if(learning_session_state$start) {
+    if(learning_state$start) {
       trial.prefix <- dplyr::case_when(
-       learning_session_state$question_count %in% 11:13 ~ "th",
-       learning_session_state$question_count %% 10 == 1 ~ "st",
-       learning_session_state$question_count %% 10 == 2 ~ "nd",
-       learning_session_state$question_count %% 10 == 3 ~ "rd",
+       learning_state$question_count %in% 11:13 ~ "th",
+       learning_state$question_count %% 10 == 1 ~ "st",
+       learning_state$question_count %% 10 == 2 ~ "nd",
+       learning_state$question_count %% 10 == 3 ~ "rd",
        TRUE ~ "th"
      )
       paste0(
-	     input$select.user, "'s ", learning_session_state$question_count, trial.prefix, " Trial", ", (OK: ", learning_session_state$correct_count, ")"
+	     input$select.user, "'s ", learning_state$question_count, trial.prefix, " Trial", ", (OK: ", learning_state$correct_count, ")"
 	     )
     } else {
       paste("Not started. Press the start button")
@@ -39,11 +39,11 @@ ui_render_score_weak <- function(main, user_state, limit = 5) {
   })
 }
 
-ui_render_qanda <- function(learning_session_state) {
+ui_render_qanda <- function(learning_state) {
   renderTable({
     tibble::tibble(
       ` ` = c("Q.", "A."),
-      sentence = paste0(c(learning_session_state$question, learning_session_state$answer), "")
+      sentence = paste0(c(learning_state$question, learning_state$answer), "")
     )
   })
 }

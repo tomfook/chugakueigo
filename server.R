@@ -35,15 +35,15 @@ shinyServer(function(input, output, session){
     config_state[[name]] <- config_state_init[[name]]
   }
 
-  learning_session_state_init <- state_initialize_learning_session()
-  learning_session_state <- reactiveValues()
-  for(name in names(learning_session_state_init)) {
-    learning_session_state[[name]] <- learning_session_state_init[[name]]
+  learning_state_init <- state_initialize_learning()
+  learning_state <- reactiveValues()
+  for(name in names(learning_state_init)) {
+    learning_state[[name]] <- learning_state_init[[name]]
   }
 
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
-  output$html.action.start <- ui_render_action_start(learning_session_state$start, app_error)
+  output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
   output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score), user_state$app_error)
 
 # user selection update
@@ -104,7 +104,7 @@ shinyServer(function(input, output, session){
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range(config_state, input$slider.qrange, main)
-    config_state <- learning_update_probability(config_state, user_state, learning_session_state)
+    config_state <- learning_update_probability(config_state, user_state, learning_state)
   })
 
   observeEvent(input$action.start,{ 
@@ -112,28 +112,28 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
-    learning_session_state <- learning_start_session(main, config_state, learning_session_state)
+    learning_state <- learning_start_session(main, config_state, learning_state)
   })
   observeEvent(input$action.answer,{
-    learning_session_state$answer <- learning_session_state$correct_answer
+    learning_state$answer <- learning_state$correct_answer
   }) 
   observeEvent(input$action.ok,{
-    result <- learning_handle_feedback(user_state, main, config_state, learning_session_state, is_correct = TRUE)
+    result <- learning_handle_feedback(user_state, main, config_state, learning_state, is_correct = TRUE)
     user_state <- result$updated_user_state
-    learning_session_state <- result$updated_learning_session_state
+    learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_feedback(user_state, main, config_state, learning_session_state, is_correct = FALSE)
+    result <- learning_handle_feedback(user_state, main, config_state, learning_state, is_correct = FALSE)
     user_state <- result$updated_user_state
-    learning_session_state <- result$updated_learning_session_state
+    learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
-  output$qanda <- ui_render_qanda(learning_session_state)
+  output$qanda <- ui_render_qanda(learning_state)
 
 #save score
   observeEvent(input$action.save,{ 
@@ -156,7 +156,7 @@ shinyServer(function(input, output, session){
   }) 
 
 #current status
-  output$welcome <- ui_render_welcome(input, user_state, learning_session_state)
+  output$welcome <- ui_render_welcome(input, user_state, learning_state)
 
 #score
   output$score.total <- ui_render_score_total(user_state)
