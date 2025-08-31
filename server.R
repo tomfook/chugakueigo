@@ -126,7 +126,8 @@ shinyServer(function(input, output, session){
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_ng_feedback(main, config_state, learning_session_state)
+    result <- learning_handle_ng_feedback(qa, main, config_state, learning_session_state)
+    qa <- result$updated_qa
     learning_session_state <- result$updated_learning_session_state
     if (!result$success) {
       ui_show_result(result)

@@ -87,7 +87,7 @@ learning_start_session <- function(main_data, config_state, learning_session_sta
   return(learning_session_state)
 }
 
-learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_session_state) {
+learning_handle_feedback <- function(qa, main_data, config_state, learning_session_state, is_correct) {
   if (!learning_session_state$start) {
     return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Learning not started"))
   }
@@ -96,23 +96,20 @@ learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_se
     return(list(success = FALSE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
   }
 
-  qa$score[learning_session_state$index] <- qa$score[learning_session_state$index] + 1L
-  learning_session_state$ok <- learning_session_state$ok + 1L
+  if (is_correct) {
+    qa$score[learning_session_state$index] <- qa$score[learning_session_state$index] + 1L
+    learning_session_state$ok <- learning_session_state$ok + 1L
+  }
+
   learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
 
   return(list(success = TRUE, updated_qa = qa, updated_learning_session_state = learning_session_state, message = ""))
 }
 
-learning_handle_ng_feedback <- function(main_data, config_state, learning_session_state) {
-  if (!learning_session_state$start) {
-    return(list(success = FALSE, updated_learning_session_state = learning_session_state, message = "Learning not started"))
-  }
+learning_handle_ok_feedback <- function(qa, main_data, config_state, learning_session_state) {
+  learning_handle_feedback(qa, main_data, config_state, learning_session_state, is_correct = TRUE)
+}
 
-  if (learning_session_state$answer == "") {
-    return(list(success = FALSE, updated_learning_session_state = learning_session_state, message = "Confirm Answer!"))
-  }
-
-  learning_session_state <- learning_new_question(main_data, learning_session_state, config_state)
-
-  return(list(success = TRUE, updated_learning_session_state = learning_session_state, message = ""))
+learning_handle_ng_feedback <- function(qa, main_data, config_state, learning_session_state) {
+  learning_handle_feedback(qa, main_data, config_state, learning_session_state, is_correct = FALSE)
 }
