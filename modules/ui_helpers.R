@@ -7,7 +7,7 @@ source("constants.R")
 ui_render_welcome <- function(input, user_state, learning_state) {
   renderText({
     if(learning_state$start) {
-      trial.prefix <- dplyr::case_when(
+      ordinal_suffix <- dplyr::case_when(
        learning_state$question_count %in% 11:13 ~ "th",
        learning_state$question_count %% 10 == 1 ~ "st",
        learning_state$question_count %% 10 == 2 ~ "nd",
@@ -15,7 +15,7 @@ ui_render_welcome <- function(input, user_state, learning_state) {
        TRUE ~ "th"
      )
       paste0(
-	     input$select.user, "'s ", learning_state$question_count, trial.prefix, " Trial", ", (OK: ", learning_state$correct_count, ")"
+	     input$select.user, "'s ", learning_state$question_count, ordinal_suffix, " Trial", ", (OK: ", learning_state$correct_count, ")"
 	     )
     } else {
       paste("Not started. Press the start button")
