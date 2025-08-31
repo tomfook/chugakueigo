@@ -107,7 +107,8 @@ shinyServer(function(input, output, session){
       slider_range = input$slider.qrange,
       prob_base = input$prob.base,
       zero_limit = input$zeronum,
-      main_data = main
+      main_data = main,
+      learning_session_state = learning_session_state
     )
   })
 
@@ -117,6 +118,7 @@ shinyServer(function(input, output, session){
       return()
     }
     learning_session_state$trial <- 0L
+    learning_session_state$ok <- 0L
     qa <- learning_start_session(qa, main, config_state)
   })
   observeEvent(input$action.answer,{
@@ -127,6 +129,7 @@ shinyServer(function(input, output, session){
     qa <- result$updated_qa
     if (result$success) {
       learning_session_state$trial <- learning_session_state$trial + 1L
+      learning_session_state$ok <- learning_session_state$ok + 1L
     }
     if (!result$success) {
       ui_show_result(result)

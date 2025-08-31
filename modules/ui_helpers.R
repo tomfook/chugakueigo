@@ -15,7 +15,7 @@ ui_render_welcome <- function(input, qa, learning_session_state) {
        TRUE ~ "th"
      )
       paste0(
-	     input$select.user, "'s ", learning_session_state$trial, trial.prefix, " Trial", ", (OK: ", qa$ok, ")"
+	     input$select.user, "'s ", learning_session_state$trial, trial.prefix, " Trial", ", (OK: ", learning_session_state$ok, ")"
 	     )
     } else {
       paste("Not started. Press the start button")

@@ -56,7 +56,7 @@ learning_new_question <- function(main, qa_state, config_state) {
   return(qa_state)
 }
 
-learning_update_range_and_probability <- function(config_state, qa, slider_range, prob_base, zero_limit, main_data) {
+learning_update_range_and_probability <- function(config_state, qa, slider_range, prob_base, zero_limit, main_data, learning_session_state) {
   if(is.null(slider_range[1])) {
     config_state$range_min <- 1L
   } else {
@@ -70,13 +70,12 @@ learning_update_range_and_probability <- function(config_state, qa, slider_range
   }
 
   score_range <- qa$score[seq(config_state$range_min, config_state$range_max)]
-  config_state$probabilities <- (abs(prob_base - qa$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
+  config_state$probabilities <- (abs(prob_base - learning_session_state$ok * SCORING$MULTIPLIER - 1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= zero_limit)
   return(config_state)
 
 }
 
 learning_start_session <- function(qa, main_data, config_state) {
-  qa$ok <- 0L
   qa$start <- TRUE
   qa <- learning_new_question(main_data, qa, config_state)
   return(qa)
@@ -92,7 +91,6 @@ learning_handle_ok_feedback <- function(qa, main_data, config_state) {
   }
 
   qa$score[qa$index] <- qa$score[qa$index] + 1L
-  qa$ok <- qa$ok + 1L
   qa <- learning_new_question(main_data, qa, config_state)
 
   return(list(success = TRUE, updated_qa = qa, message = ""))
