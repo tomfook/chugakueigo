@@ -69,11 +69,11 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
     if (!score_result$success) {
       return(list(success = FALSE, updated_scores = NULL, message = score_result$message))
     }
-    score_all <- score_result$data
-    score_all[[username]] <- user_scores
-    write.table(score_all, PATHS$SCORES, row.names = FALSE, sep = ",")
+    existing_scores <- score_result$data
+    existing_scores[[username]] <- user_scores
+    write.table(existing_scores, PATHS$SCORES, row.names = FALSE, sep = ",")
 
-    updated_scores <- score_all %>%
+    updated_scores <- existing_scores %>%
       mutate(guest = 0L) %>%
       select(guest, everything())
 
