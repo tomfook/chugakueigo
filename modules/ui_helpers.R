@@ -4,18 +4,18 @@ source("constants.R")
 #==============
 # UI render functions 
 #==============
-ui_render_welcome <- function(input, qa) {
+ui_render_welcome <- function(input, qa, learning_session_state) {
   renderText({
     if(qa$start) {
       trial.prefix <- dplyr::case_when(
-       qa$trial %in% 11:13 ~ "th",
-       qa$trial %% 10 == 1 ~ "st",
-       qa$trial %% 10 == 2 ~ "nd",
-       qa$trial %% 10 == 3 ~ "rd",
+       learning_session_state$trial %in% 11:13 ~ "th",
+       learning_session_state$trial %% 10 == 1 ~ "st",
+       learning_session_state$trial %% 10 == 2 ~ "nd",
+       learning_session_state$trial %% 10 == 3 ~ "rd",
        TRUE ~ "th"
      )
       paste0(
-	     input$select.user, "'s ", qa$trial, trial.prefix, " Trial", ", (OK: ", qa$ok, ")"
+	     input$select.user, "'s ", learning_session_state$trial, trial.prefix, " Trial", ", (OK: ", qa$ok, ")"
 	     )
     } else {
       paste("Not started. Press the start button")

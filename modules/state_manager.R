@@ -13,7 +13,6 @@ state_initialize <- function(main_data, score_global, app_error) {
     score = if(DEFAULTS$USER %in% names(score_global)) score_global[[DEFAULTS$USER]] else rep(0L, nrow(main_data)),
 
     #learning
-    trial = 0L,
     ok = 0L,
     index = NULL,
     question = "",
@@ -28,5 +27,11 @@ state_initialize_config <- function(main_data) {
     range_min = 1L,
     range_max = nrow(main_data),
     probabilities = rep(1, nrow(main_data))
+  )
+}
+
+state_initialize_learning_session <- function() {
+  list(
+    trial = 0L
   )
 }

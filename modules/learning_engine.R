@@ -53,7 +53,6 @@ learning_new_question <- function(main, qa_state, config_state) {
   qa_state$question <- next_q$question
   qa_state$answer.remember <- next_q$answer
   qa_state$answer <- ""
-  qa_state$trial <- qa_state$trial + 1L
   return(qa_state)
 }
 
@@ -77,7 +76,6 @@ learning_update_range_and_probability <- function(config_state, qa, slider_range
 }
 
 learning_start_session <- function(qa, main_data, config_state) {
-  qa$trial <- 0L
   qa$ok <- 0L
   qa$start <- TRUE
   qa <- learning_new_question(main_data, qa, config_state)

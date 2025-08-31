@@ -35,6 +35,12 @@ shinyServer(function(input, output, session){
     config_state[[name]] <- config_state_init[[name]]
   }
 
+  learning_session_state_init <- state_initialize_learning_session()
+  learning_session_state <- reactiveValues()
+  for(name in names(learning_session_state_init)) {
+    learning_session_state[[name]] <- learning_session_state_init[[name]]
+  }
+
 #render UI
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(main))
   output$html.action.start <- ui_render_action_start(qa$start, app_error)
@@ -110,6 +116,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
+    learning_session_state$trial <- 0L
     qa <- learning_start_session(qa, main, config_state)
   })
   observeEvent(input$action.answer,{
@@ -118,6 +125,9 @@ shinyServer(function(input, output, session){
   observeEvent(input$action.ok,{
     result <- learning_handle_ok_feedback(qa, main, config_state)
     qa <- result$updated_qa
+    if (result$success) {
+      learning_session_state$trial <- learning_session_state$trial + 1L
+    }
     if (!result$success) {
       ui_show_result(result)
     }
@@ -125,6 +135,9 @@ shinyServer(function(input, output, session){
   observeEvent(input$action.ng,{
     result <- learning_handle_ng_feedback(qa, main, config_state)
     qa <- result$updated_qa
+    if (result$success) {
+      learning_session_state$trial <- learning_session_state$trial + 1L
+    }
     if (!result$success) {
       ui_show_result(result)
     }
@@ -152,7 +165,7 @@ shinyServer(function(input, output, session){
   }) 
 
 #current status
-  output$welcome <- ui_render_welcome(input, qa)
+  output$welcome <- ui_render_welcome(input, qa, learning_session_state)
 
 #score
   output$score.total <- ui_render_score_total(qa)
