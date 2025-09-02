@@ -18,7 +18,6 @@ state_initialize_config <- function(qa_data) {
   list(
     range_min = 1L,
     range_max = nrow(qa_data),
-    probabilities = rep(1, nrow(qa_data)),
     prob_base = UI$DEFAULTS$PROBABILITY_BASE,
     zero_limit = UI$DEFAULTS$ZERO_LIMIT
   )
@@ -29,6 +28,7 @@ state_initialize_learning <- function(qa_data) {
     question_count = 0L,
     correct_count = 0L,
     current_score = rep(0L, nrow(qa_data)),
+    probabilities = rep(1, nrow(qa_data)),
     start = FALSE,
     index = NULL,
     question = "",
@@ -49,6 +49,7 @@ state_reset_learning <- function(learning_state) {
   learning_state$question_count <- 0L
   learning_state$correct_count <- 0L
   learning_state$current_score <- rep(0L, length(learning_state$current_score))
+  learning_state$probabilities <- rep(1, length(learning_state$probabilities))
   learning_state$start <- FALSE
   learning_state$index <- NULL
   learning_state$question <- ""

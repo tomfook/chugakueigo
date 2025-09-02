@@ -112,7 +112,7 @@ shinyServer(function(input, output, session){
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range(config_state, input$slider.qrange, qa_data)
-    config_state <- learning_update_probability(config_state, user_state, learning_state)
+    learning_state <- learning_update_probability(config_state, user_state, learning_state)
   })
 
   # Learning session controls
