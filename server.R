@@ -33,6 +33,10 @@ shinyServer(function(input, output, session){
   config_state <- state_create_reactive(state_initialize_config(qa_data))
   learning_state <- state_create_reactive(state_initialize_learning(qa_data))
 
+  save_needed <- reactive({
+    sum(learning_state$current_score) > 0
+  })
+
   # =============== UI RENDERING ====================
   # Static UI element rendering
   # =================================================
@@ -40,7 +44,7 @@ shinyServer(function(input, output, session){
   # Render dynamic UI elements
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
   output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
-  output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score + learning_state$current_score), user_state$app_error)
+  output$html.action.save <- ui_render_action_save(!save_needed(), user_state$app_error)
 
   # User selection observer
   ui_observe_user_selection(session, user_state)
