@@ -79,7 +79,8 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
 }
 
 learning_update_probability <- function(config_state, user_state, learning_state) {
-  score_range <- user_state$score[seq(config_state$range_min, config_state$range_max)]
+  effective_score <- user_state$score + learning_state$current_score
+  score_range <- effective_score[seq(config_state$range_min, config_state$range_max)]
   config_state$probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
   return(config_state)
 }
@@ -92,21 +93,21 @@ learning_start_session <- function(qa_data, config_state, learning_state) {
   return(learning_state)
 }
 
-learning_handle_feedback <- function(user_state, qa_data, config_state, learning_state, is_correct) {
+learning_handle_feedback <- function(qa_data, config_state, learning_state, is_correct) {
   if (!learning_state$start) {
-    return(list(success = FALSE, updated_user_state = user_state, updated_learning_state = learning_state, message = "Learning not started"))
+    return(list(success = FALSE, updated_learning_state = learning_state, message = "Learning not started"))
   }
 
   if (learning_state$answer == "") {
-    return(list(success = FALSE, updated_user_state = user_state, updated_learning_state = learning_state, message = "Confirm Answer!"))
+    return(list(success = FALSE, updated_learning_state = learning_state, message = "Confirm Answer!"))
   }
 
   if (is_correct) {
-    user_state$score[learning_state$index] <- user_state$score[learning_state$index] + 1L
+    learning_state$current_score[learning_state$index] <- learning_state$current_score[learning_state$index] + 1L
     learning_state$correct_count <- learning_state$correct_count + 1L
   }
 
   learning_state <- learning_new_question(qa_data, learning_state, config_state)
 
-  return(list(success = TRUE, updated_user_state = user_state, updated_learning_state = learning_state, message = ""))
+  return(list(success = TRUE, updated_learning_state = learning_state, message = ""))
 }

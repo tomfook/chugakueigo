@@ -31,7 +31,7 @@ shinyServer(function(input, output, session){
   # Initialize reactive states
   user_state <- state_create_reactive(state_initialize_user(qa_data, score_global, app_error))
   config_state <- state_create_reactive(state_initialize_config(qa_data))
-  learning_state <- state_create_reactive(state_initialize_learning())
+  learning_state <- state_create_reactive(state_initialize_learning(qa_data))
 
   # =============== UI RENDERING ====================
   # Static UI element rendering
@@ -40,7 +40,7 @@ shinyServer(function(input, output, session){
   # Render dynamic UI elements
   output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
   output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
-  output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score), user_state$app_error)
+  output$html.action.save <- ui_render_action_save(identical(user_state$all_user_scores[[input$select.user]], user_state$score + learning_state$current_score), user_state$app_error)
 
   # User selection observer
   ui_observe_user_selection(session, user_state)
@@ -125,16 +125,14 @@ shinyServer(function(input, output, session){
 
   # Feedback handling
   observeEvent(input$action.ok,{
-    result <- learning_handle_feedback(user_state, qa_data, config_state, learning_state, is_correct = TRUE)
-    user_state <- result$updated_user_state
+    result <- learning_handle_feedback(qa_data, config_state, learning_state, is_correct = TRUE)
     learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_feedback(user_state, qa_data, config_state, learning_state, is_correct = FALSE)
-    user_state <- result$updated_user_state
+    result <- learning_handle_feedback(qa_data, config_state, learning_state, is_correct = FALSE)
     learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)
@@ -151,15 +149,19 @@ shinyServer(function(input, output, session){
       ui_show_data_error("save score")
       return()
     }
+    effective_scores <- user_state$score + learning_state$current_score
+
     result <- data_save_user_score(
       username = input$select.user,
       current_user = user_state$user,
-      user_scores = user_state$score,
+      user_scores = effective_scores,
       qa_data = qa_data
       )
 
     if (result$success) {
       user_state$all_user_scores <- result$data
+      user_state$score <- effective_scores
+      learning_state$current_score <- rep(0L, nrow(qa_data))
     }
 
     ui_show_result(result)
@@ -176,11 +178,11 @@ shinyServer(function(input, output, session){
   output$welcome <- ui_render_welcome(input, user_state, learning_state)
 
   # Score displays
-  output$score.total <- ui_render_score_total(user_state)
-  output$score.weak <- ui_render_score_weak(qa_data, user_state)
+  output$score.total <- ui_render_score_total(user_state, learning_state)
+  output$score.weak <- ui_render_score_weak(qa_data, user_state, learning_state)
 
   # Questions table
-  output$dt.questions <- ui_render_questions_table(qa_data, user_state)
+  output$dt.questions <- ui_render_questions_table(qa_data, user_state, learning_state)
 
 })
 

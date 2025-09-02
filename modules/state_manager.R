@@ -24,10 +24,11 @@ state_initialize_config <- function(qa_data) {
   )
 }
 
-state_initialize_learning <- function() {
+state_initialize_learning <- function(qa_data) {
   list(
     question_count = 0L,
     correct_count = 0L,
+    current_score = rep(0L, nrow(qa_data)),
     start = FALSE,
     index = NULL,
     question = "",
@@ -47,6 +48,7 @@ state_create_reactive <- function(init_data) {
 state_reset_learning <- function(learning_state) {
   learning_state$question_count <- 0L
   learning_state$correct_count <- 0L
+  learning_state$current_score <- rep(0L, length(learning_state$current_score))
   learning_state$start <- FALSE
   learning_state$index <- NULL
   learning_state$question <- ""
