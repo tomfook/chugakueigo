@@ -32,7 +32,7 @@ user_validate_deletion <- function(selected_user, current_user) {
   return(list(valid = TRUE, message = "", type = ""))
 }
 
-user_create_scores <- function(username, current_scores, question_count){
+user_create_scores <- function(current_score, username, question_count){
   if (username %in% names(current_scores)) {
     return(list(success = FALSE, message = "Your name has been already registered."))
   }
@@ -47,13 +47,13 @@ user_create_scores <- function(username, current_scores, question_count){
     message = paste("User", username, "was added.")
   ))
 }
-user_add_new <- function(username, user_state, qa_data) {
+user_add_new <- function(user_state, username, qa_data) {
   validation <- user_validate_username(username)
   if (!validation$valid) {
     return(list(success = FALSE, message = validation$message))
   }
 
-  result <- user_create_scores(username, user_state$all_user_scores, nrow(qa_data))
+  result <- user_create_scores(user_state$all_user_scores, username, nrow(qa_data))
   if (!result$success) {
     return(result)
   }

@@ -65,7 +65,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    result <- user_add_new(input$textinp.useradd, user_state, qa_data)
+    result <- user_add_new(user_state, input$textinp.useradd, qa_data)
     ui_show_result(result)
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
