@@ -33,6 +33,9 @@ shinyServer(function(input, output, session){
   config_state <- state_create_reactive(state_initialize_config(qa_data))
   learning_state <- state_create_reactive(state_initialize_learning(qa_data))
 
+  effective_score <- reactive({
+    user_state$score + learning_state$current_score
+  })
   save_needed <- reactive({
     sum(learning_state$current_score) > 0
   })
@@ -112,7 +115,7 @@ shinyServer(function(input, output, session){
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range(config_state, input$slider.qrange, qa_data)
-    learning_state <- learning_update_probability(learning_state, config_state, user_state)
+    learning_state <- learning_update_probability(learning_state, config_state, effective_score())
   })
 
   # Learning session controls
@@ -182,11 +185,11 @@ shinyServer(function(input, output, session){
   output$welcome <- ui_render_welcome(input, user_state, learning_state)
 
   # Score displays
-  output$score.total <- ui_render_score_total(user_state, learning_state)
-  output$score.weak <- ui_render_score_weak(qa_data, user_state, learning_state)
+  output$score.total <- ui_render_score_total(effective_score)
+  output$score.weak <- ui_render_score_weak(qa_data, effective_score)
 
   # Questions table
-  output$dt.questions <- ui_render_questions_table(qa_data, user_state, learning_state)
+  output$dt.questions <- ui_render_questions_table(qa_data, effective_score)
 
 })
 

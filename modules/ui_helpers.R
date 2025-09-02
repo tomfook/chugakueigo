@@ -30,17 +30,16 @@ ui_render_welcome <- function(input, user_state, learning_state) {
   })
 }
 
-ui_render_score_total<- function(user_state, learning_state) {
+ui_render_score_total<- function(effective_score_reactive) {
   renderText({
-    effective_score <- user_state$score + learning_state$current_score
-    total <- sum(effective_score)
+    total <- sum(effective_score_reactive())
     paste("Total score:", total)
   })
 }
 
-ui_render_score_weak <- function(qa_data, user_state, learning_state, limit = 5) {
+ui_render_score_weak <- function(qa_data, effective_score_reactive, limit = 5) {
   renderTable({
-    effective_score <- user_state$score + learning_state$current_score
+    effective_score <- effective_score_reactive()
     qa_data %>%
       mutate(score = effective_score) %>%
       arrange(score) %>%
@@ -57,9 +56,9 @@ ui_render_qanda <- function(learning_state) {
   })
 }
 
-ui_render_questions_table <- function(qa_data, user_state, learning_state) {
+ui_render_questions_table <- function(qa_data, effective_score_reactive) {
   DT::renderDataTable({
-    effective_score <- user_state$score + learning_state$current_score
+    effective_score <- effective_score_reactive()
     qa_data %>%
       mutate(score = effective_score) %>%
       select(question, answer, score)

@@ -78,9 +78,7 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
   return(config_state)
 }
 
-learning_update_probability <- function(learning_state, config_state, user_state) {
-  effective_score <- user_state$score + learning_state$current_score
-
+learning_update_probability <- function(learning_state, config_state, effective_score) {
   base_probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-effective_score) * (cumsum(effective_score == 0L) <= config_state$zero_limit)
   range_mask <- (seq_along(effective_score) >= config_state$range_min) & (seq_along(effective_score) <= config_state$range_max)
   learning_state$probabilities <- base_probabilities * range_mask
