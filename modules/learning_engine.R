@@ -38,10 +38,10 @@ learning_shuffle_question <- function(q, a){
 
 learning_select_next_question <- function(qa_data, config_state) {
   question_index <- sample(
-    config_state$range_max - config_state$range_min + 1L,
+    length(config_state$probabilities),
     1,
     prob = config_state$probabilities
-  ) + (config_state$range_min - 1L)
+  )
 
     shuffled_qa <- learning_shuffle_question(qa_data$question[question_index], qa_data$answer[question_index])
 
@@ -80,8 +80,11 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
 
 learning_update_probability <- function(config_state, user_state, learning_state) {
   effective_score <- user_state$score + learning_state$current_score
-  score_range <- effective_score[seq(config_state$range_min, config_state$range_max)]
-  config_state$probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-score_range) * (cumsum(score_range == 0L) <= config_state$zero_limit)
+
+  base_probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-effective_score) * (cumsum(effective_score == 0L) <= config_state$zero_limit)
+  range_mask <- (seq_along(effective_score) >= config_state$range_min) & (seq_along(effective_score) <= config_state$range_max)
+  config_state$probabilities <- base_probabilities * range_mask
+
   return(config_state)
 }
 
