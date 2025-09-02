@@ -112,7 +112,7 @@ shinyServer(function(input, output, session){
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
     config_state <- learning_update_range(config_state, input$slider.qrange, qa_data)
-    learning_state <- learning_update_probability(config_state, user_state, learning_state)
+    learning_state <- learning_update_probability(learning_state, config_state, user_state)
   })
 
   # Learning session controls
@@ -121,7 +121,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("start learning")
       return()
     }
-    learning_state <- learning_start_session(qa_data, config_state, learning_state)
+    learning_state <- learning_start_session(learning_state, qa_data, config_state)
   })
   observeEvent(input$action.answer,{
     learning_state$answer <- learning_state$correct_answer
@@ -129,14 +129,14 @@ shinyServer(function(input, output, session){
 
   # Feedback handling
   observeEvent(input$action.ok,{
-    result <- learning_handle_feedback(qa_data, config_state, learning_state, is_correct = TRUE)
+    result <- learning_handle_feedback(learning_state, qa_data, config_state, is_correct = TRUE)
     learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)
     }
   }) 
   observeEvent(input$action.ng,{
-    result <- learning_handle_feedback(qa_data, config_state, learning_state, is_correct = FALSE)
+    result <- learning_handle_feedback(learning_state, qa_data, config_state, is_correct = FALSE)
     learning_state <- result$updated_learning_state
     if (!result$success) {
       ui_show_result(result)

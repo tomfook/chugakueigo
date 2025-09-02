@@ -52,7 +52,7 @@ learning_select_next_question <- function(qa_data, learning_state) {
     )
 }
 
-learning_new_question <- function(qa_data, learning_state, config_state) {
+learning_new_question <- function(learning_state, qa_data, config_state) {
   next_q <- learning_select_next_question(qa_data, learning_state)
   learning_state$index <- next_q$index
   learning_state$question <- next_q$question
@@ -78,7 +78,7 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
   return(config_state)
 }
 
-learning_update_probability <- function(config_state, user_state, learning_state) {
+learning_update_probability <- function(learning_state, config_state, user_state) {
   effective_score <- user_state$score + learning_state$current_score
 
   base_probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-effective_score) * (cumsum(effective_score == 0L) <= config_state$zero_limit)
@@ -88,15 +88,15 @@ learning_update_probability <- function(config_state, user_state, learning_state
   return(learning_state)
 }
 
-learning_start_session <- function(qa_data, config_state, learning_state) {
+learning_start_session <- function(learning_state, qa_data, config_state) {
   learning_state$start <- TRUE
   learning_state$question_count <- 0L
   learning_state$correct_count <- 0L
-  learning_state <- learning_new_question(qa_data, learning_state, config_state)
+  learning_state <- learning_new_question(learning_state, qa_data, config_state)
   return(learning_state)
 }
 
-learning_handle_feedback <- function(qa_data, config_state, learning_state, is_correct) {
+learning_handle_feedback <- function(learning_state, qa_data, config_state, is_correct) {
   if (!learning_state$start) {
     return(list(success = FALSE, updated_learning_state = learning_state, message = "Learning not started"))
   }
@@ -110,7 +110,7 @@ learning_handle_feedback <- function(qa_data, config_state, learning_state, is_c
     learning_state$correct_count <- learning_state$correct_count + 1L
   }
 
-  learning_state <- learning_new_question(qa_data, learning_state, config_state)
+  learning_state <- learning_new_question(learning_state, qa_data, config_state)
 
   return(list(success = TRUE, updated_learning_state = learning_state, message = ""))
 }
