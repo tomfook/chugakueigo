@@ -9,9 +9,9 @@ source("constants.R")
 # =============================
 # Core File Operations
 # =============================
-data_read_score <- function(qa_data, path = "data/score.csv") {
+data_read_score <- function(qa_count, path = "data/score.csv") {
   if (!file.exists(path)) {
-    score <- data.frame(guest = rep(0L, nrow(qa_data)))
+    score <- data.frame(guest = rep(0L, qa_count))
     write.table(score, path, row.names = FALSE, sep = ",")
     return(list(success = TRUE, data = score, message = "Score file created as it didn't exist"))
   }
@@ -22,8 +22,8 @@ data_read_score <- function(qa_data, path = "data/score.csv") {
     return(list(success = FALSE, data = NULL, message = paste("Error reading score file:", e$message)))
   })
 
-  if (nrow(qa_data) > nrow(score)) {
-    missing_rows <- nrow(qa_data) - nrow(score)
+  if (qa_count > nrow(score)) {
+    missing_rows <- qa_count - nrow(score)
     padding_data <- list()
     for (col_name in names(score)) {
       padding_data[[col_name]] <- rep(0L, missing_rows)
@@ -44,12 +44,13 @@ data_initialize <- function() {
   tryCatch({
     qa_data <- read.csv(DATA$PATHS$QUESTIONS, comment = "#", stringsAsFactors = FALSE) %>%
       filter(question != "", answer != "")
+    qa_count <- nrow(qa_data)
 
-    if (nrow(qa_data) == 0) {
+    if (qa_count == 0) {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa_data = qa_data, path = DATA$PATHS$SCORES)
+    score_result <- data_read_score(qa_count = qa_count, path = DATA$PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
@@ -57,7 +58,7 @@ data_initialize <- function() {
       mutate(guest = 0L) %>%
       select(guest, everything())
 
-    if (nrow(qa_data) != nrow(score_global)) {
+    if (qa_count != nrow(score_global)) {
       warning("Question and score data length mismatch. This has been automatically corrected.")
     }
 
@@ -71,7 +72,7 @@ data_initialize <- function() {
 # Data Persistence Operations
 # ===============================
 
-data_save_user_score <- function(username, current_user, user_scores, qa_data) {
+data_save_user_score <- function(username, current_user, user_scores, qa_count) {
   if (username != current_user) {
     return(list(
       success = FALSE,
@@ -81,7 +82,7 @@ data_save_user_score <- function(username, current_user, user_scores, qa_data) {
   }
 
   tryCatch({
-    score_result <- data_read_score(qa_data = qa_data, path = DATA$PATHS$SCORES)
+    score_result <- data_read_score(qa_count = qa_count, path = DATA$PATHS$SCORES)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = score_result$message))
     }

@@ -47,13 +47,13 @@ user_create_scores <- function(current_score, username, question_count){
     message = paste("User", username, "was added.")
   ))
 }
-user_add_new <- function(user_state, username, qa_data) {
+user_add_new <- function(user_state, username, qa_count) {
   validation <- user_validate_username(username)
   if (!validation$valid) {
     return(list(success = FALSE, message = validation$message))
   }
 
-  result <- user_create_scores(user_state$all_user_scores, username, nrow(qa_data))
+  result <- user_create_scores(user_state$all_user_scores, username, qa_count)
   if (!result$success) {
     return(result)
   }

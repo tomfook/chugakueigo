@@ -62,7 +62,7 @@ learning_new_question <- function(learning_state, qa_data, config_state) {
   return(learning_state)
 }
 
-learning_update_range <- function(config_state, slider_range, qa_data) {
+learning_update_range <- function(config_state, slider_range, qa_count) {
   if(is.null(slider_range[1])) {
     config_state$range_min <- 1L
   } else {
@@ -70,7 +70,7 @@ learning_update_range <- function(config_state, slider_range, qa_data) {
   }
 
   if(is.null(slider_range[2])) {
-    config_state$range_max <- nrow(qa_data)
+    config_state$range_max <- qa_count
   } else {
     config_state$range_max <- slider_range[2]
   }

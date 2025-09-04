@@ -28,10 +28,12 @@ shinyServer(function(input, output, session){
     score_global <- init_result$data$score_global
   }
 
+  qa_count <- nrow(qa_data)
+
   # Initialize reactive states
-  user_state <- state_create_reactive(state_initialize_user(qa_data, score_global, app_error))
-  config_state <- state_create_reactive(state_initialize_config(qa_data))
-  learning_state <- state_create_reactive(state_initialize_learning(qa_data))
+  user_state <- state_create_reactive(state_initialize_user(qa_count, score_global, app_error))
+  config_state <- state_create_reactive(state_initialize_config(qa_count))
+  learning_state <- state_create_reactive(state_initialize_learning(qa_count))
 
   effective_score <- reactive({
     user_state$score + learning_state$current_score
@@ -45,7 +47,7 @@ shinyServer(function(input, output, session){
   # =================================================
 
   # Render dynamic UI elements
-  output$html.slider.qrange <- ui_render_slider_qrange(nrow(qa_data))
+  output$html.slider.qrange <- ui_render_slider_qrange(qa_count)
   output$html.action.start <- ui_render_action_start(learning_state$start, app_error)
   output$html.action.save <- ui_render_action_save(!save_needed(), user_state$app_error)
 
@@ -68,7 +70,7 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    result <- user_add_new(user_state, input$textinp.useradd, qa_data)
+    result <- user_add_new(user_state, input$textinp.useradd, qa_count)
     ui_show_result(result)
     if (result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
@@ -114,7 +116,7 @@ shinyServer(function(input, output, session){
   observe({
     config_state$prob_base <- input$prob.base
     config_state$zero_limit <- input$zeronum
-    config_state <- learning_update_range(config_state, input$slider.qrange, qa_data)
+    config_state <- learning_update_range(config_state, input$slider.qrange, qa_count)
     learning_state <- learning_update_probability(learning_state, config_state, effective_score())
   })
 
@@ -162,13 +164,13 @@ shinyServer(function(input, output, session){
       username = input$select.user,
       current_user = user_state$user,
       user_scores = effective_scores,
-      qa_data = qa_data
+      qa_count = qa_count
       )
 
     if (result$success) {
       user_state$all_user_scores <- result$data
       user_state$score <- effective_scores
-      learning_state$current_score <- rep(0L, nrow(qa_data))
+      learning_state$current_score <- rep(0L, qa_count)
     }
 
     ui_show_result(result)
