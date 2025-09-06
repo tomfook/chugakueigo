@@ -6,6 +6,18 @@
 source("constants.R")
 source("shuffle_config.R")
 
+learning_match_english <- function(pattern, text) {
+  word_pattern <- paste0("\\b", pattern, "\\b")
+  return(grepl(word_pattern, text, ignore.case = FALSE))
+}
+learning_replace_with_boundaries <- function(text, old_word, new_word, use_boundaries = TRUE) {
+  if (use_boundaries) {
+    word_pattern <- paste0("\\b", old_word, "\\b")
+    return(gsub(word_pattern, new_word, text, ignore.case = FALSE))
+  } else {
+    return(gsub(old_word, new_word, text, fixed = TRUE))
+  }
+}
 learning_select_shuffle_keywords <- function(keyword_list, selection_rate) {
   selection_flags <- runif(length(keyword_list)) < selection_rate
   return(keyword_list[selection_flags])
@@ -20,12 +32,12 @@ learning_shuffle_question <- function(q, a){
       selected_keywords <- learning_select_shuffle_keywords(keywords, LEARNING$SHUFFLE$SELECTION_RATE)
       for (i in seq_along(selected_keywords)){
          item <- selected_keywords[[i]]
-         if (grepl(item$english[1], a)){
-           q <- gsub(item$japanese[1], item$japanese[2], q)
-           a <- gsub(item$english[1], item$english[2], a)
-         } else if (grepl(item$english[2], a)){
-           q <- gsub(item$japanese[2], item$japanese[1], q)
-           a <- gsub(item$english[2], item$english[1], a)
+	 if (learning_match_english(item$english[1], a)) {
+	   q <- learning_replace_with_boundaries(q, item$japanese[1], item$japanese[2], use_boundaries = FALSE)
+	   a <- learning_replace_with_boundaries(a, item$english[1], item$english[2], use_boundaries = TRUE)
+	 } else if (learning_match_english(item$english[2], a)) {
+	   q <- learning_replace_with_boundaries(q, item$japanese[2], item$japanese[1], use_boundaries = FALSE)
+	   a <- learning_replace_with_boundaries(a, item$english[2], item$english[1], use_boundaries = TRUE)
          }
       }
       return (list(q = q, a=a))
