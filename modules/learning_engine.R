@@ -94,40 +94,25 @@ learning_handle_feedback <- function(learning_state, qa_data, config_state, is_c
 # Text randomization to prevent memorization
 # =================
 
-learning_match_english <- function(pattern, text) {
-  word_pattern <- paste0("\\b", pattern, "\\b")
+learning_apply_shuffle_keywords <- function(qa_pair, keywords, selection_rate) {
+  selected_keywords <- keywords[runif(length(keywords)) < selection_rate]
 
-  return(grepl(word_pattern, text, ignore.case = FALSE))
-}
-learning_replace_with_boundaries <- function(text, old_word, new_word, use_boundaries = TRUE) {
-  if (use_boundaries) {
-    word_pattern <- paste0("\\b", old_word, "\\b")
-    return(gsub(word_pattern, new_word, text, ignore.case = FALSE))
-  } else {
-    return(gsub(old_word, new_word, text, fixed = TRUE))
+  for (keyword in selected_keywords) {
+    for (direction in c(1, 2)) {
+      pattern <- paste0("\\b", keyword$english[direction], "\\b")
+      if (grepl(pattern, qa_pair$a, ignore.case = FALSE)) {
+	opposite <- if (direction == 1) 2 else 1
+	qa_pair$q <- gsub(keyword$japanese[direction], keyword$japanese[opposite], qa_pair$q, fixed = TRUE)
+	qa_pair$a <- gsub(pattern, keyword$english[opposite], qa_pair$a, ignore.case = FALSE)
+	break
+      }
+    }
   }
-}
-learning_apply_single_keyword <- function(qa_pair, keyword_item) {
-  if (learning_match_english(keyword_item$english[1], qa_pair$a)) {
-    qa_pair$q <- learning_replace_with_boundaries(qa_pair$q, keyword_item$japanese[1], keyword_item$japanese[2], use_boundaries = FALSE)
-    qa_pair$a <- learning_replace_with_boundaries(qa_pair$a, keyword_item$english[1], keyword_item$english[2], use_boundaries = TRUE)
-  } else if (learning_match_english(keyword_item$english[2], qa_pair$a)) {
-    qa_pair$q <- learning_replace_with_boundaries(qa_pair$q, keyword_item$japanese[2], keyword_item$japanese[1], use_boundaries = FALSE)
-    qa_pair$a <- learning_replace_with_boundaries(qa_pair$a, keyword_item$english[2], keyword_item$english[1], use_boundaries = TRUE)
-  }
+
   return(qa_pair)
-}
-learning_select_shuffle_keywords <- function(keyword_list, selection_rate) {
-  selection_flags <- runif(length(keyword_list)) < selection_rate
-  return(keyword_list[selection_flags])
 }
 learning_shuffle_question <- function(q, a){
     qa_pair <- list(q = q, a = a)
-    selected_keywords <- learning_select_shuffle_keywords(SHUFFLE_KEYWORDS, LEARNING$SHUFFLE$SELECTION_RATE)
-
-    for (keyword in selected_keywords) {
-      qa_pair <- learning_apply_single_keyword(qa_pair, keyword)
-    }
-    
+    qa_pair <- learning_apply_shuffle_keywords(qa_pair, SHUFFLE_KEYWORDS, LEARNING$SHUFFLE$SELECTION_RATE)
     return(list(q = qa_pair$q, a = qa_pair$a))
 }
