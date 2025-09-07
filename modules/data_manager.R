@@ -4,36 +4,43 @@
 # =============================
 
 library(dplyr)
+library(googlesheets4)
+# gs4_deauth()
+gs4_auth(scopes = c(
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+),
+cache = ".secrets", email = "tomfook@gmail.com")
+
 source("constants.R")
 
 # =============================
 # Core File Operations
 # =============================
 data_read_score <- function(qa_count, path = "data/score.csv") {
-  if (!file.exists(path)) {
-    score <- data.frame(guest = rep(0L, qa_count))
-    write.table(score, path, row.names = FALSE, sep = ",")
-    return(list(success = TRUE, data = score, message = "Score file created as it didn't exist"))
-  }
-
   tryCatch({
-    score <- read.csv(path, comment = "#", stringsAsFactors = FALSE)
-  }, error = function(e) {
-    return(list(success = FALSE, data = NULL, message = paste("Error reading score file:", e$message)))
-  })
+    # Google Sheetsから読み込み
+    score <- read_sheet(DATA$SHEETS$SCORES, col_types = "c")
 
-  if (qa_count > nrow(score)) {
-    missing_rows <- qa_count - nrow(score)
-    padding_data <- list()
-    for (col_name in names(score)) {
-      padding_data[[col_name]] <- rep(0L, missing_rows)
+    numeric_cols <- names(score)
+    for(col in numeric_cols) {
+      score[[col]] <- as.integer(score[[col]])
     }
 
-    padding_rows <- data.frame(padding_data)
-    score <- bind_rows(score, padding_rows)
-  }
+    if (qa_count > nrow(score)) {
+      missing_rows <- qa_count - nrow(score)
+      padding_data <- list()
+      for (col_name in names(score)) {
+        padding_data[[col_name]] <- rep(0L, missing_rows)
+      }
+      padding_rows <- data.frame(padding_data)
+      score <- bind_rows(score, padding_rows)
+    }
 
-  return(list(success = TRUE, data = score, message = "Score data loaded successfully"))
+    return(list(success = TRUE, data = score, message = "Score data loaded successfully"))
+    }, error = function(e) {
+      return(list(success = FALSE, data = NULL, message = paste("Error reading from Google Sheets:", e$message)))
+  })
 }
 
 # ==============================
@@ -82,13 +89,14 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
   }
 
   tryCatch({
-    score_result <- data_read_score(qa_count = qa_count, path = DATA$PATHS$SCORES)
+    score_result <- data_read_score(qa_count = qa_count)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = score_result$message))
     }
     existing_scores <- score_result$data
     existing_scores[[username]] <- user_scores
-    write.table(existing_scores, DATA$PATHS$SCORES, row.names = FALSE, sep = ",")
+
+    sheet_write(existing_scores, ss = DATA$SHEETS$SCORES, sheet = "Sheet1")
 
     updated_scores <- existing_scores %>%
       mutate(guest = 0L) %>%
@@ -97,13 +105,13 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
     return(list(
       success = TRUE,
       data = updated_scores,
-      message = paste("Score saved for user:", username)
+      message = paste("Score saved to Google Sheets for user:", username)
     ))
   }, error = function(e) {
     return(list(
       success = FALSE,
       data = NULL,
-      message = paste("Error saving score:", e$message)
+      message = paste("Error saving to Google Sheets:", e$message)
     ))
   })
 }

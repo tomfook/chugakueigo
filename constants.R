@@ -29,6 +29,9 @@ DATA <- list(
   PATHS = list(
     SCORES = "data/score.csv",
     QUESTIONS = "data/qlist.csv"
+  ),
+  SHEETS = list(
+    SCORES = "1p0PyFuH9mCm2A-UtXCZ2FvpXbGPEJoueXG-JA0blz14"
   )
 )
 
