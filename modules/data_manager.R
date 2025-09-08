@@ -5,14 +5,9 @@
 
 library(dplyr)
 library(googlesheets4)
-# gs4_deauth()
-gs4_auth(scopes = c(
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-),
-cache = ".secrets", email = "tomfook@gmail.com")
-
 source("constants.R")
+gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
+
 
 # =============================
 # Core File Operations
