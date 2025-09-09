@@ -28,7 +28,6 @@ LEARNING <- list(
 
 DATA <- list(
   PATHS = list(
-    SCORES = "data/score.csv",
     QUESTIONS = "data/qlist.csv",
     SERVICE_ACCOUNT_KEY = "credentials/service-account-key.json"
   ),

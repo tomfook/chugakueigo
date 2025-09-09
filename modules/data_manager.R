@@ -12,7 +12,7 @@ gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
 # =============================
 # Core File Operations
 # =============================
-data_read_score <- function(qa_count, path = "data/score.csv") {
+data_read_score <- function(qa_count) {
   tryCatch({
     # Google Sheetsから読み込み
     score <- read_sheet(DATA$SHEETS$SCORES, col_types = "c")
@@ -52,7 +52,7 @@ data_initialize <- function() {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa_count = qa_count, path = DATA$PATHS$SCORES)
+    score_result <- data_read_score(qa_count = qa_count)
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
