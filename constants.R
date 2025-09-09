@@ -3,7 +3,8 @@ UI <- list(
   STYLES = list(
     ACTIVE = "color:black;",
     INACTIVE = "color:gray;",
-    DANGER = "background-color: #d9534f; color: white;"
+    DANGER = "background-color: #d9534f; color: white;",
+    WARNING = "font-weight: bold; color: #d9534f;"
   ),
   DEFAULTS = list(
     USER = "guest",
@@ -36,4 +37,6 @@ DATA <- list(
   )
 )
 
-
+ADMIN <- list(
+  DELETE_PASSWORD = "delete2024"
+)

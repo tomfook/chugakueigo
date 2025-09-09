@@ -93,8 +93,13 @@ shinyServer(function(input, output, session){
     }
 
     showModal(modalDialog(
-      title = "Confirmation",
-      paste("Are you sure you want to delete user '", selected_user, "'?", sep = ""),
+      title = "Delete User - Password Required",
+      div(
+	p(paste("Are you sure you want to delete user '", selected_user, "'?", sep = "")),
+	br(),
+	p("Enter administrator password to confirm deletion:", style = UI$STYLES$WARNING),
+	passwordInput("delete_password", label = NULL, placeholder = "Administrator password")
+	),
       footer = tagList(
 	modalButton("Cancel"),
 	actionButton("confirm_delete", "Delete", class = "btn-danger")
@@ -102,6 +107,14 @@ shinyServer(function(input, output, session){
     ))
   })
   observeEvent(input$confirm_delete, {
+    if (is.null(input$delete_password) || input$delete_password != ADMIN$DELETE_PASSWORD) {
+      showNotification(
+	"Incorrect administrator password. User deletion cancelled.",
+	type = "error",
+	duration = 5
+      )
+      return()
+    }
     selected_user <- input$select.userdelete
     result <- user_remove(selected_user, session$userData$user_state)
     ui_show_result(result)

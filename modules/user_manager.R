@@ -33,11 +33,11 @@ user_validate_deletion <- function(selected_user, current_user) {
 }
 
 user_create_scores <- function(current_score, username, question_count){
-  if (username %in% names(current_scores)) {
+  if (username %in% names(current_score)) {
     return(list(success = FALSE, message = "Your name has been already registered."))
   }
 
-  updated_scores <- current_scores
+  updated_scores <- current_score
   updated_scores[[username]] <- rep(0L, question_count)
 
   return(list(
