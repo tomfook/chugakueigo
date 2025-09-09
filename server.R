@@ -5,6 +5,7 @@ source("modules/user_manager.R")
 source("modules/learning_engine.R")
 source("modules/ui_helpers.R")
 source("modules/state_manager.R")
+source("modules/security_manager.R")
 source("constants.R")
 
 shinyServer(function(input, output, session){ 
@@ -107,7 +108,7 @@ shinyServer(function(input, output, session){
     ))
   })
   observeEvent(input$confirm_delete, {
-    if (is.null(input$delete_password) || input$delete_password != ADMIN$DELETE_PASSWORD) {
+    if (is.null(input$delete_password) || !security_verify_password(input$delete_password, ADMIN$PASSWORD_HASH, ADMIN$SALT)) {
       showNotification(
 	"Incorrect administrator password. User deletion cancelled.",
 	type = "error",

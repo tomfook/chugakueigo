@@ -1,3 +1,7 @@
 .secrets
 credentials/
 CLAUDE.md
+ADMIN_INFO.md
+*.admin
+*_password*
+*_secret*

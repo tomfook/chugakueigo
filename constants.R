@@ -37,5 +37,7 @@ DATA <- list(
 )
 
 ADMIN <- list(
-  DELETE_PASSWORD = "delete2024"
+  PASSWORD_HASH = "8c8f9f17f61d0a0fca3a0fe34dcdc555bd71cd9d08ebff5590baa4338792a9be",
+  SALT = "3246807a6f37be90",
+  HASH_ALGORITHM = "sha256"
 )
