@@ -132,7 +132,7 @@ shinyServer(function(input, output, session){
   observe({
     session$userData$config_state$prob_base <- input$prob.base
     session$userData$config_state$zero_limit <- input$zeronum
-    session$userData$config_state <- learning_update_range(session$userData$config_state, input$slider.qrange, qa_count)
+    session$userData$config_state <- state_update_config_range(session$userData$config_state, input$slider.qrange, qa_count)
     session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score())
   })
 
