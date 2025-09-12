@@ -76,9 +76,17 @@ shinyServer(function(input, output, session){
     score_result <- user_add_new(session$userData$user_state, input$textinp.useradd, qa_count)
     if (score_result$success) {
       meta_result <- data_add_user_to_meta(input$textinp.useradd)
+      worksheet_result <- data_ensure_user_worksheet(input$textinp.useradd, qa_count)
       if (!meta_result$success) {
 	showNotification(
 	  paste("Warning: User added to scores but failed to add to users_meta:", meta_result$message),
+	  type = "warning",
+	  duration = 10
+	)
+      }
+      if (!worksheet_result$success) {
+	showNotification(
+	  paste("Warning: User added but failed to create worksheet:", worksheet_result$message),
 	  type = "warning",
 	  duration = 10
 	)
@@ -132,12 +140,17 @@ shinyServer(function(input, output, session){
     score_result <- user_remove(selected_user, session$userData$user_state)
     if (score_result$success) {
       meta_result <- data_remove_user_from_meta(selected_user)
+      worksheet_result <- data_delete_user_worksheet(selected_user)
+
       if (!meta_result$success) {
 	showNotification(
 	  paste("Warning: User removed from scores but failed to remove from users_meta:", meta_result$message),
 	  type = "warning",
 	  duration = 10
 	)
+      }
+      if (!worksheet_result$success) {
+	showNotification(paste("Warning: User removed but failed to delete worksheet:", worksheet_result$message), type = "warning", duration = 10)
       }
     }
 

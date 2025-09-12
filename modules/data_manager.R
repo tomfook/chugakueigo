@@ -116,8 +116,12 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
     }
     existing_scores <- score_result$data
     existing_scores[[username]] <- user_scores
-
     sheet_write(existing_scores, ss = DATA$SHEETS$SCORES, sheet = "Sheet1")
+
+    user_sheet_result <- data_write_user_score(username, user_scores)
+    if (!user_sheet_result$success) {
+      warning(paste("Failed to write to user worksheet:", user_sheet_result$message))
+    }
 
     updated_scores <- existing_scores %>%
       mutate(guest = 0L) %>%
@@ -196,5 +200,71 @@ data_remove_user_from_meta <- function(username) {
     return(list(success = TRUE, message = paste("User", username, "removed from users_meta")))
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error removing user from users_meta:", e$message)))
+  })
+}
+
+
+# ===========================
+# User Worksheet management
+# ===========================
+
+data_ensure_user_worksheet <- function(username, qa_count) {
+  tryCatch({
+    sheet_name <- paste0("user_", username)
+    existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+
+    if (!(sheet_name %in% existing_sheets)) {
+      sheet_add(DATA$SHEETS$SCORES, sheet = sheet_name)
+
+      initial_data <- data.frame(
+	question_id = seq_len(qa_count),
+	score = rep(0L, qa_count),
+	stringsAsFactors = FALSE
+      )
+      sheet_write(initial_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
+    }
+
+    return(list(success = TRUE, message = paste("User worksheet ensured for:", username)))
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error ensuring user worksheet:", e$message)))
+  })
+}
+
+data_write_user_score <- function(username, user_scores) {
+  tryCatch({
+    sheet_name <- paste0("user_", username)
+
+    ensure_result <- data_ensure_user_worksheet(username, length(user_scores))
+    if (!ensure_result$success) {
+      return(ensure_result)
+    }
+
+    user_data <- data.frame(
+      question_id = seq_along(user_scores),
+      score = as.integer(user_scores),
+      stringsAsFactors = FALSE
+    )
+
+    sheet_write(user_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
+
+    return(list(success = TRUE, message = paste("User score written to worksheet:", sheet_name)))
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error writing user score:", e$message)))
+  })
+}
+
+data_delete_user_worksheet <- function(username) {
+  tryCatch({
+    sheet_name <- paste0("user_", username)
+    existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+
+    if (sheet_name %in% existing_sheets) {
+      sheet_delete(DATA$SHEETS$SCORES, sheet = sheet_name)
+      return(list(success = TRUE, message = paste("User worksheet deleted:", sheet_name)))
+    } else {
+      return(list(success = TRUE, message = paste("User worksheet not found (already deleted):", sheet_name)))
+    }
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error deleting user worksheet:", e$message)))
   })
 }
