@@ -64,6 +64,7 @@ shinyServer(function(input, output, session){
   observeEvent(input$select.user,{
     session$userData$user_state <- user_switch_reset_state(session$userData$user_state, input$select.user)
     session$userData$learning_state <- state_reset_learning(session$userData$learning_state)
+    session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score())
   }) 
 
   # User addition
