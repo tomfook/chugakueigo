@@ -30,9 +30,10 @@ shinyServer(function(input, output, session){
   }
 
   qa_count <- nrow(qa_data)
+  user_names <- init_result$data$user_names
 
   # Initialize reactive states
-  session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, score_global, app_error))
+  session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, score_global, user_names, app_error))
   session$userData$config_state <- state_create_reactive(state_initialize_config(qa_count))
   session$userData$learning_state <- state_create_reactive(state_initialize_learning(qa_count))
 

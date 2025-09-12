@@ -4,13 +4,13 @@
 # ================================
 source("constants.R")
 
-state_initialize_user <- function(qa_count, score_global, app_error) {
+state_initialize_user <- function(qa_count, score_global, user_names, app_error) {
   list(
     app_error = app_error,
     user = UI$DEFAULTS$USER,
-    user_names = names(score_global),
+    user_names = user_names,
     all_user_scores = score_global,
-    score = if(UI$DEFAULTS$USER %in% names(score_global)) score_global[[UI$DEFAULTS$USER]] else rep(0L, qa_count)
+    score = if(UI$DEFAULTS$USER %in% user_names) score_global[[UI$DEFAULTS$USER]] else rep(0L, qa_count)
     )
 }
 

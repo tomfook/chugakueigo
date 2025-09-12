@@ -64,7 +64,17 @@ data_initialize <- function() {
       warning("Question and score data length mismatch. This has been automatically corrected.")
     }
 
-    return(list(success = TRUE, data = list(qa_data = qa_data, score_global = score_global), message = "Data initialized successfully"))
+    user_names <- names(score_global)
+
+    return(list(
+      success = TRUE,
+      data = list(
+	qa_data = qa_data,
+	score_global = score_global,
+	user_names = user_names
+      ),
+      message = "Data initialized successfully")
+    )
   }, error = function(e) {
     return(list(success = FALSE, data = NULL, message = paste("Failed to initialize data:", e$message)))
   })
