@@ -32,7 +32,8 @@ DATA <- list(
     SERVICE_ACCOUNT_KEY = "credentials/service-account-key.json"
   ),
   SHEETS = list(
-    SCORES = "1p0PyFuH9mCm2A-UtXCZ2FvpXbGPEJoueXG-JA0blz14"
+    SCORES = "1p0PyFuH9mCm2A-UtXCZ2FvpXbGPEJoueXG-JA0blz14",
+    USERS_META = "1p0PyFuH9mCm2A-UtXCZ2FvpXbGPEJoueXG-JA0blz14"
   )
 )
 

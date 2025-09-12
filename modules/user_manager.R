@@ -104,4 +104,3 @@ user_remove <- function(username, user_state) {
     return(list(success = FALSE, message = paste("Error removing user:", e$message)))
   })
 }
-

@@ -73,9 +73,19 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    result <- user_add_new(session$userData$user_state, input$textinp.useradd, qa_count)
-    ui_show_result(result)
-    if (result$success) {
+    score_result <- user_add_new(session$userData$user_state, input$textinp.useradd, qa_count)
+    if (score_result$success) {
+      meta_result <- data_add_user_to_meta(input$textinp.useradd)
+      if (!meta_result$success) {
+	showNotification(
+	  paste("Warning: User added to scores but failed to add to users_meta:", meta_result$message),
+	  type = "warning",
+	  duration = 10
+	)
+      }
+    }
+    ui_show_result(score_result)
+    if (score_result$success) {
       updateTextInput(session, "textinp.useradd", value = "")
     }
   })
@@ -119,8 +129,19 @@ shinyServer(function(input, output, session){
       return()
     }
     selected_user <- input$select.userdelete
-    result <- user_remove(selected_user, session$userData$user_state)
-    ui_show_result(result)
+    score_result <- user_remove(selected_user, session$userData$user_state)
+    if (score_result$success) {
+      meta_result <- data_remove_user_from_meta(selected_user)
+      if (!meta_result$success) {
+	showNotification(
+	  paste("Warning: User removed from scores but failed to remove from users_meta:", meta_result$message),
+	  type = "warning",
+	  duration = 10
+	)
+      }
+    }
+
+    ui_show_result(score_result)
     removeModal()
   })
 

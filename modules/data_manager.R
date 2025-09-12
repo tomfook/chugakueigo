@@ -38,6 +38,16 @@ data_read_score <- function(qa_count) {
   })
 }
 
+data_read_users_meta <- function() {
+  tryCatch({
+    users_meta <- read_sheet(DATA$SHEETS$USERS_META, sheet = "users_meta", col_types = "cDDd")
+
+    return(list(success = TRUE, data = users_meta, message = "Users metadata loaded successfully"))
+  }, error = function(e) {
+    return(list(success = FALSE, data = NULL, message = paste("Error reading users_meta from Google Sheets:", e$message)))
+  })
+}
+
 # ==============================
 # Application Initialization
 # ==============================
@@ -56,6 +66,12 @@ data_initialize <- function() {
     if (!score_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
     }
+
+    users_meta_result <- data_read_users_meta()
+    if (!users_meta_result$success) {
+      return(list(success = FALSE, data = NULL, message = paste("Failed to initialize users_meta:", users_meta_result$message)))
+    }
+
     score_global <- score_result$data %>%
       mutate(guest = 0L) %>%
       select(guest, everything())
@@ -64,7 +80,7 @@ data_initialize <- function() {
       warning("Question and score data length mismatch. This has been automatically corrected.")
     }
 
-    user_names <- names(score_global)
+    user_names <- users_meta_result$data$username
 
     return(list(
       success = TRUE,
@@ -118,5 +134,67 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
       data = NULL,
       message = paste("Error saving to Google Sheets:", e$message)
     ))
+  })
+}
+
+# ===========================
+# Users Meta Management
+# ===========================
+
+data_add_user_to_meta <- function(username) {
+  tryCatch({
+    users_meta_result <- data_read_users_meta()
+    if (!users_meta_result$success) {
+      return(users_meta_result)
+    }
+
+    current_meta <- users_meta_result$data
+
+    if (username %in% current_meta$username) {
+      return(list(success = FALSE, message = "User already exists in users_meta"))
+    }
+
+    new_row <- data.frame(
+      username = username,
+      created_date = Sys.time(),
+      last_updated = Sys.time(),
+      question_count = 0,
+      stringsAsFactors = FALSE
+    )
+
+    updated_meta <- rbind(current_meta, new_row)
+
+    sheet_write(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+
+    return(list(success = TRUE, message = paste("User", username, "added to users_meta")))
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error adding user to users_meta:", e$message)))
+  })
+}
+
+data_remove_user_from_meta <- function(username) {
+  tryCatch({
+    users_meta_result <- data_read_users_meta()
+    if (!users_meta_result$success) {
+      return(users_meta_result)
+    }
+
+    current_meta <- users_meta_result$data
+
+    if (!(username %in% current_meta$username)) {
+      return(list(success = FALSE, message = "User not found in users_meta"))
+    }
+
+    if (username == UI$DEFAULTS$USER) {
+      return(list(success = FALSE, message = "Cannot remove guest user from users_meta"))
+    }
+
+    updated_meta <- current_meta[current_meta$username != username,]
+
+    sheet_write(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+
+    return(list(success = TRUE, message = paste("User", username, "removed from users_meta")))
+  }, error = function(e) {
+    return(list(success = FALSE, message = paste("Error removing user from users_meta:", e$message)))
   })
 }
