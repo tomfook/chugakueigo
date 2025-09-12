@@ -72,3 +72,9 @@ state_update_config_range <- function(config_state, slider_range, qa_count) {
 
   return(config_state)
 }
+
+state_switch_user <- function(user_state, new_username) {
+  user_state$user <- new_username
+  user_state$score <- user_state$all_user_scores[[new_username]]
+  return(user_state)
+}

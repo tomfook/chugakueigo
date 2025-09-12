@@ -105,10 +105,3 @@ user_remove <- function(username, user_state) {
   })
 }
 
-user_switch_reset_state <- function(user_state, new_username) {
-  user_state$user <- new_username
-  user_state$score <- user_state$all_user_scores[[new_username]]
-
-  return(user_state)
-}
-
