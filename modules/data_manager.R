@@ -12,31 +12,6 @@ gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
 # =============================
 # Core File Operations
 # =============================
-data_read_score <- function(qa_count) {
-  tryCatch({
-    # Google Sheetsから読み込み
-    score <- read_sheet(DATA$SHEETS$SCORES, col_types = "c")
-
-    numeric_cols <- names(score)
-    for(col in numeric_cols) {
-      score[[col]] <- as.integer(score[[col]])
-    }
-
-    if (qa_count > nrow(score)) {
-      missing_rows <- qa_count - nrow(score)
-      padding_data <- list()
-      for (col_name in names(score)) {
-        padding_data[[col_name]] <- rep(0L, missing_rows)
-      }
-      padding_rows <- data.frame(padding_data)
-      score <- bind_rows(score, padding_rows)
-    }
-
-    return(list(success = TRUE, data = score, message = "Score data loaded successfully"))
-    }, error = function(e) {
-      return(list(success = FALSE, data = NULL, message = paste("Error reading from Google Sheets:", e$message)))
-  })
-}
 
 data_read_user_score <- function(username, qa_count) {
   tryCatch({
