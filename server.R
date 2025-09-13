@@ -19,21 +19,21 @@ shinyServer(function(input, output, session){
 
   if (app_error) {
     qa_data <- data.frame(question = "", answer = "")
-    score_global <- data.frame(guest = 0L)
+    user_score <- rep(0L, 1)
     showNotification(
       paste("Important: Data initialization failed: ", init_result$message, "- restart app"),
       type = "error", duration = NULL
       )
   } else{
     qa_data <- init_result$data$qa_data
-    score_global <- init_result$data$score_global
+    user_score <- init_result$data$user_score
   }
 
   qa_count <- nrow(qa_data)
   user_names <- init_result$data$user_names
 
   # Initialize reactive states
-  session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, score_global, user_names, app_error))
+  session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, user_score, user_names, app_error))
   session$userData$config_state <- state_create_reactive(state_initialize_config(qa_count))
   session$userData$learning_state <- state_create_reactive(state_initialize_learning(qa_count))
 
@@ -62,7 +62,10 @@ shinyServer(function(input, output, session){
 
   # User account switching
   observeEvent(input$select.user,{
-    session$userData$user_state <- state_switch_user(session$userData$user_state, input$select.user)
+    user_score_result <- data_read_user_score(input$select.user, qa_count)
+    session$userData$user_state$user <- input$select.user
+    session$userData$user_state$score <- user_score_result$data
+
     session$userData$learning_state <- state_reset_learning(session$userData$learning_state)
     session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score())
   }) 
@@ -218,7 +221,6 @@ shinyServer(function(input, output, session){
       )
 
     if (result$success) {
-      session$userData$user_state$all_user_scores <- result$data
       session$userData$user_state$score <- effective_scores
       session$userData$learning_state$current_score <- rep(0L, qa_count)
     }

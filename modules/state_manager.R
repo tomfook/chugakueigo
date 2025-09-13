@@ -4,13 +4,12 @@
 # ================================
 source("constants.R")
 
-state_initialize_user <- function(qa_count, score_global, user_names, app_error) {
+state_initialize_user <- function(qa_count, user_score, user_names, app_error) {
   list(
     app_error = app_error,
     user = UI$DEFAULTS$USER,
     user_names = user_names,
-    all_user_scores = score_global,
-    score = if(UI$DEFAULTS$USER %in% user_names) score_global[[UI$DEFAULTS$USER]] else rep(0L, qa_count)
+    score = user_score
     )
 }
 
@@ -73,8 +72,3 @@ state_update_config_range <- function(config_state, slider_range, qa_count) {
   return(config_state)
 }
 
-state_switch_user <- function(user_state, new_username) {
-  user_state$user <- new_username
-  user_state$score <- user_state$all_user_scores[[new_username]]
-  return(user_state)
-}

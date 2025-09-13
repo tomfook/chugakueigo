@@ -38,6 +38,42 @@ data_read_score <- function(qa_count) {
   })
 }
 
+data_read_user_score <- function(username, qa_count) {
+  tryCatch({
+    if (username == UI$DEFAULTS$USER) {
+      user_scores <- rep(0L, qa_count)
+      return(list(success = TRUE, data = user_scores, message = "Guest user scores initialized"))
+    }
+
+    sheet_name <- paste0("user_", username)
+    existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+
+    if (!(sheet_name %in% existing_sheets)) {
+      user_scores <- rep(0L, qa_count)
+      return(list(success = TRUE, data = user_scores, message = paste("User worksheet not found, initialized with zeros:", username)))
+    }
+
+    user_data <- read_sheet(DATA$SHEETS$SCORES, sheet = sheet_name, col_types = "ii")
+
+    if (nrow(user_data) < qa_count) {
+      missing_rows <- qa_count - nrow(user_data)
+      additional_data <- data.frame(
+	question_id = seq(nrow(user_data) + 1, qa_count),
+	score = rep(0L, missing_rows)
+      )
+      user_data <- bind_rows(user_data, additional_data)
+    } else if (nrow(user_data) > qa_count) {
+      user_data <- user_data[1:qa_count, ]
+    }
+
+    user_scores <- user_data$score
+    return(list(success = TRUE, data = user_scores, message = paste("User scores loaded successfully:", username)))
+  }, error = function(e) {
+    user_scores <- rep(0L, qa_count)
+    return(list(success = FALSE, data = user_scores, message = paste("Error reading user scores, using zeros:", e$message)))
+  })
+}
+
 data_read_users_meta <- function() {
   tryCatch({
     users_meta <- read_sheet(DATA$SHEETS$USERS_META, sheet = "users_meta", col_types = "cDDd")
@@ -62,22 +98,14 @@ data_initialize <- function() {
       return(list(success = FALSE, data = NULL, message = "No valid questions found in qlist.csv"))
     }
 
-    score_result <- data_read_score(qa_count = qa_count)
-    if (!score_result$success) {
-      return(list(success = FALSE, data = NULL, message = paste("Failed to initialize:", score_result$message)))
-    }
-
     users_meta_result <- data_read_users_meta()
     if (!users_meta_result$success) {
       return(list(success = FALSE, data = NULL, message = paste("Failed to initialize users_meta:", users_meta_result$message)))
     }
 
-    score_global <- score_result$data %>%
-      mutate(guest = 0L) %>%
-      select(guest, everything())
-
-    if (qa_count != nrow(score_global)) {
-      warning("Question and score data length mismatch. This has been automatically corrected.")
+    guest_score_result <- data_read_user_score(UI$DEFAULTS$USER, qa_count)
+    if (!guest_score_result$success) {
+      return(list(success = FALSE, data = NULL, message = paste("Failed to initialize guest score:", guest_score_result$message)))
     }
 
     user_names <- users_meta_result$data$username
@@ -86,7 +114,7 @@ data_initialize <- function() {
       success = TRUE,
       data = list(
 	qa_data = qa_data,
-	score_global = score_global,
+	user_score = guest_score_result$data,
 	user_names = user_names
       ),
       message = "Data initialized successfully")
@@ -110,28 +138,16 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
   }
 
   tryCatch({
-    score_result <- data_read_score(qa_count = qa_count)
-    if (!score_result$success) {
-      return(list(success = FALSE, data = NULL, message = score_result$message))
-    }
-    existing_scores <- score_result$data
-    existing_scores[[username]] <- user_scores
-    sheet_write(existing_scores, ss = DATA$SHEETS$SCORES, sheet = "Sheet1")
-
     user_sheet_result <- data_write_user_score(username, user_scores)
     if (!user_sheet_result$success) {
-      warning(paste("Failed to write to user worksheet:", user_sheet_result$message))
+      return(list(success = FALSE, data = NULL, message = user_sheet_result$message))
     }
-
-    updated_scores <- existing_scores %>%
-      mutate(guest = 0L) %>%
-      select(guest, everything())
 
     return(list(
       success = TRUE,
-      data = updated_scores,
-      message = paste("Score saved to Google Sheets for user:", username)
-    ))
+      data = NULL,
+      message = paste("Score saved to user worksheet for user:", username)
+      ))
   }, error = function(e) {
     return(list(
       success = FALSE,
