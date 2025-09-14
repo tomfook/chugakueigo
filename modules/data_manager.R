@@ -18,15 +18,13 @@ data_read_user_score <- function(username, qa_count) {
   utils_safe_execute(
     operation = function() {
       if (username == UI$DEFAULTS$USER) {
-	user_scores <- rep(0L, qa_count)
-	return(user_scores)
+	return(rep(0L, qa_count))
       }
       sheet_name <- paste0("user_", username)
       existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
 
       if (!(sheet_name %in% existing_sheets)) {
-	user_scores <- rep(0L, qa_count)
-	return(user_scores)
+	return(rep(0L, qa_count))
       }
 
       user_data <- read_sheet(DATA$SHEETS$SCORES, sheet = sheet_name, col_types = "ii")
@@ -159,7 +157,7 @@ data_remove_user_from_meta <- function(username) {
     operation = function() {
       users_meta_result <- data_read_users_meta()
       if (!users_meta_result$success) {
-	stop(users_meta_result)
+	stop(users_meta_result$message)
       }
 
       current_meta <- users_meta_result$data
@@ -226,7 +224,7 @@ data_write_user_score <- function(username, user_scores) {
   
       ensure_result <- data_ensure_user_worksheet(username, length(user_scores))
       if (!ensure_result$success) {
-        stop(ensure_result)
+        stop(ensure_result$message)
       }
   
       user_data <- data.frame(
