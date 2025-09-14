@@ -144,7 +144,6 @@ data_add_user_to_meta <- function(username) {
     }
 
     current_meta <- users_meta_result$data
-
     if (username %in% current_meta$username) {
       return(list(success = FALSE, message = "User already exists in users_meta"))
     }
@@ -157,12 +156,8 @@ data_add_user_to_meta <- function(username) {
       stringsAsFactors = FALSE
     )
 
-    updated_meta <- rbind(current_meta, new_row)
+    sheet_append(DATA$SHEETS$USERS_META, new_row, sheet = "users_meta")
 
-    write_result <- data_safe_sheet_write_with_retry(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
-    if (!write_result$success) {
-      return(list(success = FALSE, message = write_result$message))
-    }
     return(list(success = TRUE, message = paste("User", username, "added to users_meta")))
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error adding user to users_meta:", e$message)))
@@ -186,7 +181,7 @@ data_remove_user_from_meta <- function(username) {
       return(list(success = FALSE, message = "Cannot remove guest user from users_meta"))
     }
 
-    updated_meta <- current_meta[current_meta$username != username,]
+    updated_meta <- current_meta[current_meta$username != username,,drop = FALSE]
 
     write_result <- data_safe_sheet_write_with_retry(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
     if (!write_result$success) {
