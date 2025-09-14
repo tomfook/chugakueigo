@@ -94,8 +94,6 @@ user_remove <- function(username, user_state) {
   }
 
   tryCatch({
-    sheet_write(result$updated_scores, ss = DATA$SHEETS$SCORES, sheet = "Sheet1")
-
     user_state$all_user_scores <- result$updated_scores
     user_state$user_names <- result$updated_user_names
 
