@@ -159,8 +159,10 @@ data_add_user_to_meta <- function(username) {
 
     updated_meta <- rbind(current_meta, new_row)
 
-    sheet_write(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
-
+    write_result <- data_safe_sheet_write_with_retry(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+    if (!write_result$success) {
+      return(list(success = FALSE, message = write_result$message))
+    }
     return(list(success = TRUE, message = paste("User", username, "added to users_meta")))
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error adding user to users_meta:", e$message)))
@@ -186,7 +188,10 @@ data_remove_user_from_meta <- function(username) {
 
     updated_meta <- current_meta[current_meta$username != username,]
 
-    sheet_write(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+    write_result <- data_safe_sheet_write_with_retry(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+    if (!write_result$success) {
+      return(list(success = FALSE, message = write_result$message))
+    }
 
     return(list(success = TRUE, message = paste("User", username, "removed from users_meta")))
   }, error = function(e) {
@@ -212,9 +217,12 @@ data_ensure_user_worksheet <- function(username, qa_count) {
 	score = rep(0L, qa_count),
 	stringsAsFactors = FALSE
       )
-      sheet_write(initial_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
-    }
 
+      write_result <- data_safe_sheet_write_with_retry(initial_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
+      if (!write_result$success) {
+	return(list(success = FALSE, message = write_result$message))
+      }
+    }
     return(list(success = TRUE, message = paste("User worksheet ensured for:", username)))
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error ensuring user worksheet:", e$message)))
@@ -236,7 +244,10 @@ data_write_user_score <- function(username, user_scores) {
       stringsAsFactors = FALSE
     )
 
-    sheet_write(user_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
+    write_result <- data_safe_sheet_write_with_retry(user_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
+    if (!write_result$success) {
+      return(list(success = FALSE, message = write_result$message))
+    }
 
     return(list(success = TRUE, message = paste("User score written to worksheet:", sheet_name)))
   }, error = function(e) {
@@ -258,4 +269,35 @@ data_delete_user_worksheet <- function(username) {
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error deleting user worksheet:", e$message)))
   })
+}
+
+# ===========================
+# Network Error Retry Functions
+# ===========================
+
+data_safe_sheet_write_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
+  for (attempt in 1:max_retries) {
+    tryCatch({
+      sheet_write(data, ss = ss, sheet = sheet)
+      return(list(
+	success = TRUE,
+	message = paste("Write successful on attempt", attempt),
+	retry_count = attempt
+      ))
+    }, error = function(e) {
+      error_msg <- toString(e$message)
+      is_retryable <- grepl("timeout|429|5[0-9][0-9]|network|connection|quota", error_msg, ignore.case = TRUE)
+
+      if(!is_retryable || attempt == max_retries) {
+	return(list(
+	  success = FALSE,
+	  message = paste("Write failed after", attempt, "attempts:", error_msg),
+	  retry_count = attempt
+	))
+      }
+
+      delay <- base_delay * (2 ^ (attempt -1))
+      Sys.sleep(delay)
+    })
+  }
 }
