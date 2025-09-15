@@ -8,11 +8,11 @@
 # Standardized Error Handling
 # ===========================
 
-utils_safe_execute <- function(operation, success_message = "", error_message_prefix = "", fallback_data = NULL, user_result_as_message = FALSE) {
+utils_safe_execute <- function(operation, success_message = "", error_message_prefix = "", fallback_data = NULL, use_result_as_message = FALSE) {
   tryCatch({
     result <- operation()
 
-    if (user_result_as_message && is.character(result) && length(result) == 1) {
+    if (use_result_as_message && is.character(result) && length(result) == 1) {
       message <- result
       data <- NULL
     } else {

@@ -1,14 +1,48 @@
 # =============================
 # DATA MANAGER MODULE
 # Handles data file operations: reading, writing, and initialization
+# Function prefix: data_*
 # =============================
 
 library(dplyr)
 library(googlesheets4)
 source("constants.R")
 source("utils.R")
-gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
 
+# ===========================
+# Google Sheets Authentication
+# ===========================
+
+data_setup_google_auth <- function() {
+  utils_safe_execute(
+    operation = function() {
+      json_content <- Sys.getenv("GOOGLE_APPLICAION_CREDENTIALS_JSON")
+
+      if (json_content != "" && json_content != "NA") {
+	temp_file <- tempfile(fileext = ".json")
+	writeLines(json_content, temp_file)
+	on.exit(unlink(temp_file), add = TRUE)
+	gs4_auth(path = temp_file)
+	return("Environment variable authentication successful")
+      } else {
+	if (file.exists(DATA$PATHS$SERVICE_ACCOUNT_KEY)) {
+	  gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
+	  return("File-based authentication successful")
+	} else {
+	  stop("Neithger environment variable nor service account file found")
+	}
+      }
+    },
+    success_message = "",
+    error_message_prefix = "Authentication failed:",
+    use_result_as_message = TRUE
+  )
+}
+
+auth_result <- data_setup_google_auth()
+if (!auth_result$success) {
+  stop(paste("Google Sheets authentication failed:", auth_result$message))
+}
 
 # =============================
 # Core File Operations
