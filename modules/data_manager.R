@@ -16,21 +16,29 @@ source("utils.R")
 data_setup_google_auth <- function() {
   utils_safe_execute(
     operation = function() {
-      json_content <- Sys.getenv("GOOGLE_APPLICAION_CREDENTIALS_JSON")
+      env_result <- utils_detect_environment()
+      if (!env_result$success) {
+	stop("Failed to detect environment")
+      }
+      env_info <- env_result$data
 
-      if (json_content != "" && json_content != "NA") {
+      if (env_info$auth_method == "environment_variable") {
+	json_content <- Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+	if (json_content == "" || json_content == "NA") {
+	  stop("Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON not found in production environment")
+	}
 	temp_file <- tempfile(fileext = ".json")
 	writeLines(json_content, temp_file)
 	on.exit(unlink(temp_file), add = TRUE)
 	gs4_auth(path = temp_file)
-	return("Environment variable authentication successful")
+
+	return(paste("Environment variable authentication successful on", env_info$platform))
       } else {
-	if (file.exists(DATA$PATHS$SERVICE_ACCOUNT_KEY)) {
-	  gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
-	  return("File-based authentication successful")
-	} else {
-	  stop("Neithger environment variable nor service account file found")
+	if (!file.exists(DATA$PATHS$SERVICE_ACCOUNT_KEY)) {
+	  stop("Service account file not found in development environment")
 	}
+	gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
+	return(paste("File-based authentication successful on", env_info$platform))
       }
     },
     success_message = "",
