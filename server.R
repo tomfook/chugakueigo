@@ -76,27 +76,33 @@ shinyServer(function(input, output, session){
       ui_show_data_error("add user")
       return()
     }
-    score_result <- user_add_new(session$userData$user_state, input$textinp.useradd, qa_count)
-    if (score_result$success) {
-      meta_result <- data_add_user_to_meta(input$textinp.useradd)
-      worksheet_result <- data_ensure_user_worksheet(input$textinp.useradd, qa_count)
-      if (!meta_result$success) {
+    results <- ui_with_user_add_progress(
+      input$textinp.useradd,
+      list(
+	score_operation = function() user_add_new(session$userData$user_state, input$textinp.useradd, qa_count),
+	meta_operation = function() data_add_user_to_meta(input$textinp.useradd),
+	worksheet_operation = function() data_ensure_user_worksheet(input$textinp.useradd, qa_count)
+	)
+    )
+
+    if (results$score$success) {
+      if (!is.null(results$meta) && !results$meta$success) {
 	showNotification(
-	  paste("Warning: User added to scores but failed to add to users_meta:", meta_result$message),
+	  paste("Warning: User added to scores but failed to add to users_meta:", results$meta$message),
 	  type = "warning",
 	  duration = 10
 	)
       }
-      if (!worksheet_result$success) {
+      if (!is.null(results$worksheet) && !results$worksheet$success) {
 	showNotification(
-	  paste("Warning: User added but failed to create worksheet:", worksheet_result$message),
+	  paste("Warning: User added but failed to create worksheet:", results$worksheet$message),
 	  type = "warning",
 	  duration = 10
 	)
       }
     }
-    ui_show_result(score_result)
-    if (score_result$success) {
+    ui_show_result(results$score)
+    if (results$score$success) {
       updateTextInput(session, "textinp.useradd", value = "")
     }
   })

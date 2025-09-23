@@ -174,3 +174,24 @@ ui_with_save_progress <- function(operation) {
     return(result)
   })
 }
+
+ui_with_user_add_progress <- function(username, add_operations) {
+  withProgress(message = paste("Adding user:", username), value = 0, {
+    incProgress(0.2, detail = "Validating user data...")
+    score_result <- add_operations$score_operation()
+
+    if (score_result$success) {
+      incProgress(0.5, detail = "Adding to user registry...")
+      meta_result <- add_operations$meta_operation()
+
+      incProgress(0.8, detail = "Creating user worksheet...")
+      worksheet_result <- add_operations$worksheet_operation()
+
+      incProgress(1.0, detail = "User added successfully!")
+      return(list(score = score_result, meta = meta_result, worksheet = worksheet_result))
+    } else {
+      incProgress(1.0, detail = "User addition failed")
+      return(list(score = score_result, meta = NULL, worksheet = NULL))
+    }
+  })
+}
