@@ -164,3 +164,13 @@ ui_with_initialization_progress <- function(operation) {
     return(result)
   })
 }
+
+ui_with_save_progress <- function(operation) {
+  withProgress(message = "Saving your score...", value = 0, {
+    incProgress(0.3, detail = "Preparing score data...")
+    incProgress(0.7, detail = "Uploading to Google Sheets...")
+    result <- operation()
+    incProgress(1.0, detail = if(result$success) "Score saved successfully!" else "Save completed")
+    return(result)
+  })
+}

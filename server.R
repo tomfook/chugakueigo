@@ -213,12 +213,14 @@ shinyServer(function(input, output, session){
     }
     effective_scores <- session$userData$user_state$score + session$userData$learning_state$current_score
 
-    result <- data_save_user_score(
-      username = input$select.user,
-      current_user = session$userData$user_state$user,
-      user_scores = effective_scores,
-      qa_count = qa_count
-      )
+    result <- ui_with_save_progress(function() {
+      data_save_user_score(
+        username = input$select.user,
+        current_user = session$userData$user_state$user,
+        user_scores = effective_scores,
+        qa_count = qa_count
+        )
+      })
 
     if (result$success) {
       session$userData$user_state$score <- effective_scores
