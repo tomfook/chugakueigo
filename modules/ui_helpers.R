@@ -148,3 +148,19 @@ ui_show_data_error <- function(operation) {
     paste("Data error: Cannot", operation), type = "error"
   )
 }
+
+# ================================
+# Loading Indicator Functions
+# Progress indicators for long-running operations
+# ================================
+
+ui_with_initialization_progress <- function(operation) {
+  withProgress(message = "Initializing ChugakuEigo...", value = 0, {
+    incProgress(0.2, detail = "Loading question database...")
+    incProgress(0.5, detail = "Connecting to Google Sheets...")
+    incProgress(0.8, detail = "Loading user accounts...")
+    result <- operation()
+    incProgress(1.0, detail = "Initialization complete!")
+    return(result)
+  })
+}

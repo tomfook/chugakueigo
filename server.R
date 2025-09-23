@@ -14,7 +14,7 @@ shinyServer(function(input, output, session){
   # =================================================
 
   # Initialize core data
-  init_result <- data_initialize()
+  init_result <- ui_with_initialization_progress(function() {data_initialize()})
   app_error <- !init_result$success
 
   if (app_error) {
