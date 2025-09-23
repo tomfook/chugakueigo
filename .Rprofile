@@ -28,4 +28,9 @@ if (interactive()) {
   cat("Loading ChugakuEigo development environment...\n")
 }
 
-
+credentials_file <- "credentials/service-account-key.json"
+if (file.exists(credentials_file)) {
+  json_content <- paste(readLines(credentials_file), collapse = "")
+  Sys.setenv(GOOGLE_APPLICATION_CREDENTIALS_JSON = json_content)
+  cat("Credentials loaded from file into environment variable\n")
+}
