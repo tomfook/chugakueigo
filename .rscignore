@@ -1,0 +1,58 @@
+# .rscignore - Files to exclude from shinyapps.io deployment
+# This file follows .gitignore syntax and is automatically recognized by rsconnect
+
+# === SECURITY: Credentials are INCLUDED in deployment ===
+# credentials/ folder is intentionally NOT excluded because it's required for Google Sheets authentication
+
+# === DOCUMENTATION AND PROJECT FILES ===
+CLAUDE.md
+ADMIN_INFO.md
+README.md
+*.md
+DEPLOYMENT.md
+LICENSE
+.dcfignore
+
+# === DEVELOPMENT FILES ===
+*.swp
+.*.swp
+*/.*.swp
+*/*/.*swp
+*/*/*/.*.swp
+*.bak
+**/*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+
+# === ADMIN AND PASSWORD FILES ===
+*.admin
+*_password*
+*_secret*
+*_key*
+*.env
+
+# === LOCAL DATA FILES ===
+# Exclude local score data to prevent overwriting production data
+data/score.csv
+
+# === TEMPORARY AND BACKUP FILES ===
+*~
+*.backup
+*.bak
+ur.R.bak
+data/qlist.csv.bak
+.*.swp
+.*~
+.server.R.swp
+modules/data_manager/.data_storage.R.swp
+
+# === IDE AND EDITOR FILES ===
+.vscode/
+.idea/
+*.code-workspace
+
+# === JSON FILES (potential credentials) ===
+# Be careful with JSON files that might contain sensitive data
+# Uncomment if needed:
+# *.json

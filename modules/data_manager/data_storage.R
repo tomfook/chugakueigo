@@ -25,7 +25,12 @@ storage_setup_authentication <- function() {
       if (env_info$auth_method == "environment_variable") {
 	json_content <- Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 	if (json_content == "" || json_content == "NA") {
-	  stop("Environment variable GOOGLE_APPLICATION_CREDENTIALS_JSON not found in production environment")
+	  if (file.exists(DATA$PATHS$SERVICE_ACCOUNT_KEY)) {
+	    gs4_auth(path = DATA$PATHS$SERVICE_ACCOUNT_KEY)
+	    return("File-based authentication (fallback) successful")
+	  } else {
+	    stop("Both authentication methods failed")
+	  }
 	}
 	temp_file <- tempfile(fileext = ".json")
 	writeLines(json_content, temp_file)

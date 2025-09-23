@@ -5,3 +5,29 @@ ADMIN_INFO.md
 *.admin
 *_password*
 *_secret*
+
+# R session files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# rsconnect deployment files
+rsconnect/
+
+# Package management
+packrat/
+renv/
+renv.lock
+
+# Development files
+*.swp
+*.tmp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
