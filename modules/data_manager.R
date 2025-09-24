@@ -69,7 +69,7 @@ data_read_users_meta <- function() {
 data_initialize <- function() {
   utils_safe_execute(
     operation = function() {
-      qa_data <- read.csv(DATA$PATH$QUESTIONS, comment ="#", stringsAsFactors = FALSE) %>%
+      qa_data <- read.csv(DATA$PATHS$QUESTIONS, comment ="#", stringsAsFactors = FALSE) %>%
 	filter(question != "", answer != "")
       qa_count <- nrow(qa_data)
       if (qa_count == 0){
