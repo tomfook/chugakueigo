@@ -12,6 +12,7 @@ ChugakuEigo (中学英語) is a Shiny-based adaptive language learning applicati
 - **Text Shuffling**: Randomizes elements within questions/answers to prevent rote memorization
 - **Real-time Feedback**: Immediate OK/NG feedback system for self-assessment
 - **Performance Analytics**: Detailed scoring and weak point analysis
+- **Dynamic Question Management**: Safe insertion, deletion, and modification of questions without data corruption
 
 ### User Management
 - **User Account System**: Create, switch between, and delete user accounts
@@ -35,7 +36,9 @@ ChugakuEigo (中学英語) is a Shiny-based adaptive language learning applicati
 - **dplyr**: Data manipulation and transformation
 
 ### Data Storage
-- **Local CSV**: Primary data storage for questions and scores (`data/qlist.csv`)
+- **Local CSV**: Primary data storage with structured question database (`data/qlist.csv`)
+  - Question data with unique IDs, timestamps, and content
+  - ID-based architecture supporting safe insertion/deletion operations
 - **Google Sheets API**: Cloud backup and multi-device synchronization
 - **googlesheets4**: R package for Google Sheets integration
 
@@ -163,7 +166,15 @@ Edit `constants.R` to modify:
 ### Data Structure
 
 The app uses two main data sources:
-- **Questions** (`data/qlist.csv`): Japanese-English question-answer pairs
+- **Questions** (`data/qlist.csv`): Structured question database with:
+  - `question_id`: Unique identifier for each question
+  - `question`: Japanese sentence
+  - `answer`: English translation
+  - `created_at`: Question creation timestamp
+  - `updated_at`: Last modification timestamp
 - **Scores** (Google Sheets): User performance data with automatic cloud sync
+  - ID-based score tracking linked to question IDs
+  - Automatic padding for new questions
+  - Resilient to question database modifications
 
-Scores are tracked per question per user, enabling personalized adaptive learning paths.
+Scores are tracked per question ID per user, enabling personalized adaptive learning paths with data integrity across question database changes.
