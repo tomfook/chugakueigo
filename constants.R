@@ -1,11 +1,5 @@
 # UI Styles
 UI <- list(
-  STYLES = list(
-    ACTIVE = "color:black;",
-    INACTIVE = "color:gray;",
-    DANGER = "background-color: #d9534f; color: white;",
-    WARNING = "font-weight: bold; color: #d9534f;"
-  ),
   DEFAULTS = list(
     USER = "guest",
     ZERO_LIMIT = 5L,

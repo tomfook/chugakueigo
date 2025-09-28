@@ -98,11 +98,11 @@ ui_render_action_start <- function(is_started, has_error = FALSE) {
   renderUI({
     if (has_error) {
       actionButton("action.start", label = "Start Learning (Disabled)",
-	style = UI$STYLES$INACTIVE, disabled = TRUE
+	class = "text-muted", disabled = TRUE
 	)
     } else {
       actionButton("action.start", label = "Start Learning",
-        style = if_else(is_started, UI$STYLES$INACTIVE, UI$STYLES$ACTIVE)
+        class = if_else(is_started, "text-muted", "text-dark")
     )
     }
   })
@@ -112,10 +112,10 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
   renderUI({
     if (has_error) {
       actionButton("action.save", label = "Save Score (Disabled)",
-		   style = UI$STYLES$INACTIVE, disabled = TRUE
+		   class = "text-muted", disabled = TRUE
 		   )
     } else {
-      actionButton("action.save", label = "Save Score", style = if_else(scores_match, UI$STYLES$INACTIVE, UI$STYLES$ACTIVE)
+      actionButton("action.save", label = "Save Score", class = if_else(scores_match, "text-muted", "text-dark")
       )
     }
   })

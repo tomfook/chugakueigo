@@ -133,7 +133,7 @@ shinyServer(function(input, output, session){
       div(
 	p(paste("Are you sure you want to delete user '", selected_user, "'?", sep = "")),
 	br(),
-	p("Enter administrator password to confirm deletion:", style = UI$STYLES$WARNING),
+	p("Enter administrator password to confirm deletion:", class = "text-danger font-weight-bold"),
 	passwordInput("delete_password", label = NULL, placeholder = "Administrator password")
 	),
       footer = tagList(
