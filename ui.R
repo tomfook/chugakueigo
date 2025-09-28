@@ -39,7 +39,7 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
-	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS, step = 1, min = 1),
+	  numericInput("zero.score.limit", label = h4("Maximum zero-score questions to include"), value = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS, step = 1, min = 1),
           numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = LEARNING$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN)
         ),
         tabPanel("questions",
