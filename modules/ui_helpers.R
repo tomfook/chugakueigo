@@ -13,6 +13,9 @@ source("constants.R")
 
 ui_render_welcome <- function(input, user_state, learning_state) {
   renderText({
+    validate(
+      need(input$select.user, "Please select a user")
+    )
     if(learning_state$start) {
       ordinal_suffix <- dplyr::case_when(
        learning_state$question_count %in% 11:13 ~ "th",
@@ -32,6 +35,9 @@ ui_render_welcome <- function(input, user_state, learning_state) {
 
 ui_render_score_total<- function(effective_score_reactive) {
   renderText({
+    validate(
+      need(effective_score_reactive(), "Loading scores...")
+    )
     total <- sum(effective_score_reactive())
     paste("Total score:", total)
   })
@@ -39,6 +45,10 @@ ui_render_score_total<- function(effective_score_reactive) {
 
 ui_render_score_weak <- function(qa_data, effective_score_reactive, limit = 5) {
   renderTable({
+    validate(
+      need(effective_score_reactive(), "Loading scores..."),
+      need(nrow(qa_data) > 0, "Loading questions...")
+    )
     effective_score <- effective_score_reactive()
 
     score_df <- data.frame(
@@ -71,6 +81,10 @@ ui_render_qanda <- function(learning_state) {
 
 ui_render_questions_table <- function(qa_data, effective_score_reactive) {
   DT::renderDataTable({
+    validate(
+      need(effective_score_reactive(), "Loading scores..."),
+      need(nrow(qa_data) > 0, "Loading questions...")
+    )
     effective_score <- effective_score_reactive()
 
     score_df <- data.frame(
