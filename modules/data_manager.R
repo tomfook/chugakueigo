@@ -23,7 +23,7 @@ data_read_user_score <- function(username, qa_data) {
   utils_safe_execute(
     operation = function() {
       qa_count = nrow(qa_data)
-      if (username == UI$DEFAULTS$USER) {
+      if (username == APP$DEFAULTS$USER) {
 	return(setNames(rep(0L, qa_count), as.character(1:qa_count)))
       }
       sheet_name <- paste0("user_", username)
@@ -86,7 +86,7 @@ data_initialize <- function() {
 	stop(paste("Failed to initialize users_meta:", users_meta_result$message))
       }
 
-      guest_score_result <- data_read_user_score(UI$DEFAULTS$USER, qa_data)
+      guest_score_result <- data_read_user_score(APP$DEFAULTS$USER, qa_data)
       if (!guest_score_result$success) {
 	stop(paste("Failed to initialize guest score:", guest_score_result$message))
       }
@@ -176,7 +176,7 @@ data_remove_user_from_meta <- function(username) {
 	stop("User not found in users_meta")
       }
 
-      if (username == UI$DEFAULTS$USER) {
+      if (username == APP$DEFAULTS$USER) {
         stop("Cannot remove guest user from users_meta")
       } 
 

@@ -7,7 +7,7 @@ source("constants.R")
 state_initialize_user <- function(qa_count, user_score, user_names, app_error) {
   list(
     app_error = app_error,
-    user = UI$DEFAULTS$USER,
+    user = APP$DEFAULTS$USER,
     user_names = user_names,
     score = user_score
     )
@@ -17,8 +17,8 @@ state_initialize_config <- function(qa_count) {
   list(
     range_min = 1L,
     range_max = qa_count,
-    prob_base = UI$DEFAULTS$PROBABILITY_BASE,
-    zero_limit = UI$DEFAULTS$ZERO_LIMIT
+    prob_base = LEARNING$DEFAULTS$PROBABILITY_BASE,
+    zero_limit = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS
   )
 }
 

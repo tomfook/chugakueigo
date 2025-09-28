@@ -5,7 +5,7 @@ shinyUI(fluidPage(
   titlePanel("ChugakuEigo"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("select.user", "select your name", choices = c(UI$DEFAULTS$USER), selected = UI$DEFAULTS$USER),
+      selectInput("select.user", "select your name", choices = c(APP$DEFAULTS$USER), selected = APP$DEFAULTS$USER),
       actionButton("action.start", label = "Start Learning"), 
       actionButton("action.save", label = "Save Score"),
       p(), 
@@ -39,8 +39,8 @@ shinyUI(fluidPage(
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
-	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = UI$DEFAULTS$ZERO_LIMIT, step = 1, min = 1),
-          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = UI$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN)
+	  numericInput("zeronum", label = h4("inclusion of zero scored question"), value = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS, step = 1, min = 1),
+          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = LEARNING$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN)
         ),
         tabPanel("questions",
           h3("Questions"),

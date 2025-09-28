@@ -14,7 +14,7 @@ user_validate_username <- function(username) {
   if (grepl("[^a-zA-Z0-9_-]", username)) {
     return(list(valid = FALSE, message = "Username can only contain letters, numbers, underscore, and hyphen."))
   }
-  if (username == UI$DEFAULTS$USER) {
+  if (username == APP$DEFAULTS$USER) {
     return(list(valid = FALSE, message = "Username 'guest' is reserved."))
   }
   return(list(valid = TRUE, message = ""))
@@ -69,7 +69,7 @@ user_add_new <- function(user_state, username, qa_count) {
 user_remove_from_scores <- function(user_state, username){
   current_scores <- user_state$all_user_scores
   user_names <- user_state$user_names
-  if (username == UI$DEFAULTS$USER) {
+  if (username == APP$DEFAULTS$USER) {
       return(list(success = FALSE, message = "Cannot remove guest user."))
   }
 

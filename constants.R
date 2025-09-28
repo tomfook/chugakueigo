@@ -1,15 +1,15 @@
-# UI Styles
-UI <- list(
+APP <- list(
   DEFAULTS = list(
-    USER = "guest",
-    ZERO_LIMIT = 5L,
-    PROBABILITY_BASE = 1.6
+    USER = "guest"
   )
 )
 
 LEARNING <- list(
+  DEFAULTS = list(
+    PROBABILITY_BASE = 1.6,
+    MAX_ZERO_SCORE_QUESTIONS = 5L
+  ),
   PROBABILITY = list(
-    BASE = 1.6,
     STEP = 0.1,
     MIN = 1.0,
     MULTIPLIER = 0.005

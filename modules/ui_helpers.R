@@ -134,7 +134,7 @@ ui_observe_user_selection <- function(session, user_state){
 
 ui_observe_delete_choices <- function(session, user_state) {
   observe({
-    delete_choices <- user_state$user_names[user_state$user_names != UI$DEFAULTS$USER]
+    delete_choices <- user_state$user_names[user_state$user_names != APP$DEFAULTS$USER]
     updateSelectInput(
       session,
       "select.userdelete",
