@@ -175,12 +175,6 @@ ui_show_result <- function(result) {
   )
 }
 
-ui_show_data_error <- function(operation) {
-  showNotification(
-    paste("Data error: Cannot", operation), type = "error"
-  )
-}
-
 # ================================
 # Loading Indicator Functions
 # Progress indicators for long-running operations

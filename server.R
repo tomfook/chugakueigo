@@ -78,10 +78,10 @@ shinyServer(function(input, output, session){
 
   # User addition
   observeEvent(input$action.useradd,{
-    if (app_error) {
-      ui_show_data_error("add user")
-      return()
-    }
+    validate(
+      need(!session$userData$user_state$app_error, "Data error: Cannot add user - restart app")
+    )
+
     results <- ui_with_user_add_progress(
       input$textinp.useradd,
       list(
@@ -117,10 +117,10 @@ shinyServer(function(input, output, session){
   ui_observe_delete_choices(session, session$userData$user_state)
 
   observeEvent(input$action.userdelete, {
-    if (app_error) {
-      ui_show_data_error("delete user")
-      return()
-    }
+    validate(
+      need(!session$userData$user_state$app_error, "Data error: Cannot delete user - restart app")
+    )
+
     selected_user <- input$select.userdelete
     validation <- user_validate_deletion(selected_user, input$select.user)
     if (!validation$valid) {
@@ -187,10 +187,9 @@ shinyServer(function(input, output, session){
 
   # Learning session controls
   observeEvent(input$action.start,{ 
-    if (app_error) {
-      ui_show_data_error("start learning")
-      return()
-    }
+    validate(
+      need(!session$userData$user_state$app_error, "Data error: Cannot start learning - restart app")
+    )
     session$userData$learning_state <- learning_start_session(session$userData$learning_state, qa_data, session$userData$config_state)
   })
   observeEvent(input$action.answer,{
@@ -219,10 +218,9 @@ shinyServer(function(input, output, session){
 
   # Save user score
   observeEvent(input$action.save,{ 
-    if (app_error) {
-      ui_show_data_error("save score")
-      return()
-    }
+    validate(
+      need(!session$userData$user_state$app_error, "Data error: Cannot save score - restart app")
+    )
     effective_scores <- session$userData$user_state$score + session$userData$learning_state$current_score
 
     result <- ui_with_save_progress(function() {
