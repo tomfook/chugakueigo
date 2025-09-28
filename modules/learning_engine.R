@@ -19,7 +19,7 @@ learning_select_next_question <- function(qa_data, learning_state) {
     shuffled_qa <- learning_shuffle_question(qa_data$question[question_index], qa_data$answer[question_index])
 
     list(
-      index = question_index,
+      question_id = qa_data$question_id[question_index],
       question = shuffled_qa$q,
       answer = shuffled_qa$a
     )
@@ -30,7 +30,7 @@ learning_select_next_question <- function(qa_data, learning_state) {
 # =================
 learning_new_question <- function(learning_state, qa_data, config_state) {
   next_q <- learning_select_next_question(qa_data, learning_state)
-  learning_state$index <- next_q$index
+  learning_state$question_id <- next_q$question_id
   learning_state$question <- next_q$question
   learning_state$correct_answer <- next_q$answer
   learning_state$answer <- ""
@@ -40,8 +40,12 @@ learning_new_question <- function(learning_state, qa_data, config_state) {
 
 learning_update_probability <- function(learning_state, config_state, effective_score) {
   base_probabilities <- (abs(config_state$prob_base - learning_state$correct_count * LEARNING$PROBABILITY$MULTIPLIER -1) + 1)^(-effective_score) * (cumsum(effective_score == 0L) <= config_state$zero_limit)
-  range_mask <- (seq_along(effective_score) >= config_state$range_min) & (seq_along(effective_score) <= config_state$range_max)
-  learning_state$probabilities <- base_probabilities * range_mask
+
+  #masking
+  learning_state$probabilities <- base_probabilities
+  question_ids <- as.integer(names(effective_score))
+  out_of_range_ids <- question_ids[(question_ids < config_state$range_min) | (question_ids > config_state$range_max)]
+  learning_state$probabilities[as.character(out_of_range_ids)] <- 0
 
   return(learning_state)
 }
@@ -64,7 +68,7 @@ learning_handle_feedback <- function(learning_state, qa_data, config_state, is_c
   }
 
   if (is_correct) {
-    learning_state$current_score[learning_state$index] <- learning_state$current_score[learning_state$index] + 1L
+    learning_state$current_score[learning_state$question_id] <- learning_state$current_score[learning_state$question_id] + 1L
     learning_state$correct_count <- learning_state$correct_count + 1L
   }
 

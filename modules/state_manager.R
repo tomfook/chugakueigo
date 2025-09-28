@@ -22,14 +22,15 @@ state_initialize_config <- function(qa_count) {
   )
 }
 
-state_initialize_learning <- function(qa_count) {
+state_initialize_learning <- function(qa_data) {
+  qa_count <- nrow(qa_data)
   list(
     question_count = 0L,
     correct_count = 0L,
-    current_score = rep(0L, qa_count),
-    probabilities = rep(1, qa_count),
+    current_score = setNames(rep(0L, qa_count), qa_data$question_id),
+    probabilities = setNames(rep(1, qa_count), qa_data$question_id),
     start = FALSE,
-    index = NULL,
+    question_id = NULL,
     question = "",
     answer = "",
     correct_answer = ""
@@ -47,10 +48,10 @@ state_create_reactive <- function(init_data) {
 state_reset_learning <- function(learning_state) {
   learning_state$question_count <- 0L
   learning_state$correct_count <- 0L
-  learning_state$current_score <- rep(0L, length(learning_state$current_score))
-  learning_state$probabilities <- rep(1, length(learning_state$probabilities))
+  learning_state$current_score[] <- 0L
+  learning_state$probabilities[] <- 1
   learning_state$start <- FALSE
-  learning_state$index <- NULL
+  learning_state$question_id <- NULL
   learning_state$question <- ""
   learning_state$answer <- ""
   return(learning_state)

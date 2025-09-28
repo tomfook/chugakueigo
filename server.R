@@ -18,8 +18,14 @@ shinyServer(function(input, output, session){
   app_error <- !init_result$success
 
   if (app_error) {
-    qa_data <- data.frame(question = "", answer = "")
-    user_score <- rep(0L, 1)
+    qa_data <- data.frame(
+      question_id = 1L,
+      question = "",
+      answer = "",
+      created_at = Sys.time(),
+      updated_at = Sys.time()
+    )
+    user_score <- setNames(rep(0L, 1), "1")
     showNotification(
       paste("Important: Data initialization failed: ", init_result$message, "- restart app"),
       type = "error", duration = NULL
@@ -35,7 +41,7 @@ shinyServer(function(input, output, session){
   # Initialize reactive states
   session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, user_score, user_names, app_error))
   session$userData$config_state <- state_create_reactive(state_initialize_config(qa_count))
-  session$userData$learning_state <- state_create_reactive(state_initialize_learning(qa_count))
+  session$userData$learning_state <- state_create_reactive(state_initialize_learning(qa_data))
 
   effective_score <- reactive({
     session$userData$user_state$score + session$userData$learning_state$current_score
@@ -62,7 +68,7 @@ shinyServer(function(input, output, session){
 
   # User account switching
   observeEvent(input$select.user,{
-    user_score_result <- data_read_user_score(input$select.user, qa_count)
+    user_score_result <- data_read_user_score(input$select.user, qa_data)
     session$userData$user_state$user <- input$select.user
     session$userData$user_state$score <- user_score_result$data
 
@@ -81,7 +87,7 @@ shinyServer(function(input, output, session){
       list(
 	score_operation = function() user_add_new(session$userData$user_state, input$textinp.useradd, qa_count),
 	meta_operation = function() data_add_user_to_meta(input$textinp.useradd),
-	worksheet_operation = function() data_ensure_user_worksheet(input$textinp.useradd, qa_count)
+	worksheet_operation = function() data_ensure_user_worksheet(input$textinp.useradd, qa_data$question_id)
 	)
     )
 
@@ -230,7 +236,7 @@ shinyServer(function(input, output, session){
 
     if (result$success) {
       session$userData$user_state$score <- effective_scores
-      session$userData$learning_state$current_score <- rep(0L, qa_count)
+      session$userData$learning_state$current_score[] <- 0L
     }
 
     ui_show_result(result)

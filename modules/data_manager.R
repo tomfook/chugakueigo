@@ -19,38 +19,43 @@ if (!auth_result$success) {
 # Core File Operations
 # =============================
 
-data_read_user_score <- function(username, qa_count) {
+data_read_user_score <- function(username, qa_data) {
   utils_safe_execute(
     operation = function() {
+      qa_count = nrow(qa_data)
       if (username == UI$DEFAULTS$USER) {
-	return(rep(0L, qa_count))
+	return(setNames(rep(0L, qa_count), as.character(1:qa_count)))
       }
       sheet_name <- paste0("user_", username)
       existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
 
       if (!(sheet_name %in% existing_sheets)) {
-	return(rep(0L, qa_count))
+	return(setNames(rep(0L, qa_count), as.character(1:qa_count)))
       }
 
       user_data <- read_sheet(DATA$SHEETS$SCORES, sheet = sheet_name, col_types = "ii")
 
-      if (nrow(user_data) < qa_count) {
-        missing_rows <- qa_count - nrow(user_data)
-        additional_data <- data.frame(
-  	question_id = seq(nrow(user_data) + 1, qa_count),
-  	score = rep(0L, missing_rows)
-        )
-        user_data <- bind_rows(user_data, additional_data)
-      } else if (nrow(user_data) > qa_count) {
-        user_data <- user_data[1:qa_count, ]
-      }
+      required_ids <- qa_data$question_id
+      existing_ids <- user_data$question_id
+      missing_ids <- setdiff(required_ids, existing_ids)
 
-      user_scores <- user_data$score
+      if (length(missing_ids) > 0) {
+	additional_data <- data.frame(
+	  question_id = missing_ids,
+	  score = rep(0L, length(missing_ids))
+	)
+	user_data <- bind_rows(user_data, additional_data)
+      }
+      
+      user_data <- user_data[user_data$question_id %in% required_ids, ]
+      user_data <- user_data[order(user_data$question_id), ]
+
+      user_scores <- setNames(user_data$score, as.character(user_data$question_id))
       return(user_scores)
     },
     success_message = paste("User scores loaded successfully:", username),
     error_message_prefix = "Error reading user scores, using zeros:",
-    fallback_data = rep(0L, qa_count)
+    fallback_data = setNames(rep(0L, nrow(qa_data)), as.character(qa_data$question_id))
   )
 }
 
@@ -81,7 +86,7 @@ data_initialize <- function() {
 	stop(paste("Failed to initialize users_meta:", users_meta_result$message))
       }
 
-      guest_score_result <- data_read_user_score(UI$DEFAULTS$USER, qa_count)
+      guest_score_result <- data_read_user_score(UI$DEFAULTS$USER, qa_data)
       if (!guest_score_result$success) {
 	stop(paste("Failed to initialize guest score:", guest_score_result$message))
       }
@@ -194,7 +199,7 @@ data_remove_user_from_meta <- function(username) {
 # User Worksheet management
 # ===========================
 
-data_ensure_user_worksheet <- function(username, qa_count) {
+data_ensure_user_worksheet <- function(username, question_ids) {
   utils_safe_execute(
     operation = function() {
       sheet_name <- paste0("user_", username)
@@ -204,9 +209,9 @@ data_ensure_user_worksheet <- function(username, qa_count) {
         sheet_add(DATA$SHEETS$SCORES, sheet = sheet_name)
   
         initial_data <- data.frame(
-  	question_id = seq_len(qa_count),
-  	score = rep(0L, qa_count),
-  	stringsAsFactors = FALSE
+       	  question_id = as.integer(question_ids),
+      	  score = rep(0L, length(question_ids)),
+      	  stringsAsFactors = FALSE
         )
 
         write_result <- storage_safe_write_with_retry(initial_data, ss = DATA$SHEETS$SCORES, sheet = sheet_name)
@@ -227,14 +232,14 @@ data_write_user_score <- function(username, user_scores) {
 
       sheet_name <- paste0("user_", username)
   
-      ensure_result <- data_ensure_user_worksheet(username, length(user_scores))
+      ensure_result <- data_ensure_user_worksheet(username, names(user_scores))
       if (!ensure_result$success) {
         stop(ensure_result$message)
       }
   
       user_data <- data.frame(
-        question_id = seq_along(user_scores),
-        score = as.integer(user_scores),
+        question_id = as.integer(names(user_scores)),
+        score = user_scores,
         stringsAsFactors = FALSE
       )
   

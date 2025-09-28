@@ -40,8 +40,15 @@ ui_render_score_total<- function(effective_score_reactive) {
 ui_render_score_weak <- function(qa_data, effective_score_reactive, limit = 5) {
   renderTable({
     effective_score <- effective_score_reactive()
+
+    score_df <- data.frame(
+      question_id = as.integer(names(effective_score)),
+      score = as.integer(effective_score)
+    )
+
     qa_data %>%
-      mutate(score = effective_score) %>%
+      left_join(score_df, by = "question_id") %>%
+      select(question, answer, score) %>%
       arrange(score) %>%
       head(limit)
   })
@@ -59,8 +66,13 @@ ui_render_qanda <- function(learning_state) {
 ui_render_questions_table <- function(qa_data, effective_score_reactive) {
   DT::renderDataTable({
     effective_score <- effective_score_reactive()
+
+    score_df <- data.frame(
+      question_id = as.integer(names(effective_score)),
+      score = as.integer(effective_score)
+    )
     qa_data %>%
-      mutate(score = effective_score) %>%
+      left_join(score_df, by = "question_id") %>%
       select(question, answer, score)
   })
 }
