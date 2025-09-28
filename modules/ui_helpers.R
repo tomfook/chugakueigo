@@ -56,6 +56,12 @@ ui_render_score_weak <- function(qa_data, effective_score_reactive, limit = 5) {
 
 ui_render_qanda <- function(learning_state) {
   renderTable({
+    validate(
+      need(learning_state$start, "Press 'Start Learning' to begin")
+    )
+    validate(
+      need(learning_state$question != "", "Loading question...")
+    )
     tibble::tibble(
       ` ` = c("Q.", "A."),
       sentence = paste0(c(learning_state$question, learning_state$answer), "")
