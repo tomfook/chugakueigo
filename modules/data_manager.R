@@ -19,43 +19,62 @@ if (!auth_result$success) {
 # Cache Functions
 # =============================
 
-data_get_cached_sheet_names <- function() {
+data_get_cached_data <- function(cache_key, ttl_seconds, data_fetcher) {
   if (!CACHE$ENABLED) {
-    return(sheet_names(DATA$SHEETS$SCORES))
+    return(data_fetcher())
   }
-
-  cache <- get("app_global_cache", envir = .GlobalEnv)
-  current_time <- Sys.time()
-
-  if (!is.null(cache$sheet_names$data) &&
-      !is.null(cache$sheet_names$timestamp) &&
-      difftime(current_time, cache$sheet_names$timestamp, units = "secs") < CACHE$SHEET_NAMES$TTL) {
-    return(cache$sheet_names$data)
-  }
-
 
   tryCatch({
-    result <- sheet_names(DATA$SHEETS$SCORES)
-    cache$sheet_names$data <- result
-    cache$sheet_names$timestamp <- current_time
-    cache$sheet_names$is_valid <- TRUE
+    if (!exists("app_global_cache", envir = .GlobalEnv)) {
+      assign("app_global_cache", list(
+	sheet_names = list(data = NULL, timestamp = NULL, is_valid = FALSE),
+	users_meta = list(data = NULL, timestamp = NULL, is_valid = FALSE)
+	), envir = .GlobalEnv)
+    }
+    cache <- get("app_global_cache", envir = .GlobalEnv)
+    current_time <- Sys.time()
+  
+    if (!is.null(cache[[cache_key]]$data) &&
+        !is.null(cache[[cache_key]]$timestamp) &&
+        difftime(current_time, cache[[cache_key]]$timestamp, units = "secs") < ttl_seconds) {
+      return(cache[[cache_key]]$data)
+    }
+  
+    result <- data_fetcher()
+
+    cache[[cache_key]]$data <- result
+    cache[[cache_key]]$timestamp <- current_time
+    cache[[cache_key]]$is_valid <- TRUE
+
+    assign("app_global_cache", cache, envir = .GlobalEnv)
+
     return(result)
   }, error = function(e) {
-    if (!is.null(cache$sheet_names$data)) {
-      warning("API call failed, using cached data: ", e$message)
-      return(cache$sheet_names$data)
-    }
-    stop(e)
+    warning(paste("API call failed for", cache_key, ", using cached data:", e$message))
+    return(data_fetcher())
   })
 }
+      
+data_get_cached_sheet_names <- function() {
+  data_get_cached_data("sheet_names", CACHE$SHEET_NAMES$TTL, function() {sheet_names(DATA$SHEETS$SCORES)})
+}
 
-data_invalidate_sheet_names_cache <- function() {
+data_get_cached_users_meta <- function() {
+  data_get_cached_data("users_meta", CACHE$USERS_META$TTL, function() {data_read_users_meta()})
+}
+
+data_invalidate_cache <- function(cache_key) {
   if (!CACHE$ENABLED) return()
 
+  if (!exists("app_global_cache", envir = .GlobalEnv)) {
+    return()
+  }
+
   cache <- get("app_global_cache", envir = .GlobalEnv)
-  cache$sheet_names$data <- NULL
-  cache$sheet_names$timestamp <- NULL
-  cache$sheet_names$is_valid <- FALSE
+  cache[[cache_key]]$data <- NULL
+  cache[[cache_key]]$timestamp <- NULL
+  cache[[cache_key]]$is_valid <- FALSE
+  assign("app_global_cache", cache, envir = .GlobalEnv)
 }
 
 
@@ -126,7 +145,7 @@ data_initialize <- function() {
 	stop("No valid questions found in qlist.csv")
       }
 
-      users_meta_result <- data_read_users_meta()
+      users_meta_result <- data_get_cached_users_meta()
       if (!users_meta_result$success) {
 	stop(paste("Failed to initialize users_meta:", users_meta_result$message))
       }
@@ -177,7 +196,7 @@ data_save_user_score <- function(username, current_user, user_scores, qa_count) 
 data_add_user_to_meta <- function(username) {
   utils_safe_execute(
     operation = function(){
-      users_meta_result <- data_read_users_meta()
+      users_meta_result <- data_get_cached_users_meta()
       if (!users_meta_result$success) {
 	stop(users_meta_result$message)
       }
@@ -196,6 +215,7 @@ data_add_user_to_meta <- function(username) {
       )
 
       append_result <- storage_safe_append_with_retry(new_row, DATA$SHEETS$USERS_META, sheet = "users_meta")
+      data_invalidate_cache("users_meta")
       if (!append_result$success) {
         stop(append_result$message)
       }
@@ -210,7 +230,7 @@ data_add_user_to_meta <- function(username) {
 data_remove_user_from_meta <- function(username) {
   utils_safe_execute(
     operation = function() {
-      users_meta_result <- data_read_users_meta()
+      users_meta_result <- data_get_cached_users_meta()
       if (!users_meta_result$success) {
 	stop(users_meta_result$message)
       }
@@ -228,6 +248,7 @@ data_remove_user_from_meta <- function(username) {
       updated_meta <- current_meta[current_meta$username != username,,drop = FALSE]
 
       write_result <- storage_safe_write_with_retry(updated_meta, ss = DATA$SHEETS$USERS_META, sheet = "users_meta")
+      data_invalidate_cache("users_meta")
       if (!write_result$success) {
         stop(write_result$message)
       }
@@ -252,7 +273,7 @@ data_ensure_user_worksheet <- function(username, question_ids) {
 
       if (!(sheet_name %in% existing_sheets)) {
         sheet_add(DATA$SHEETS$SCORES, sheet = sheet_name)
-	data_invalidate_sheet_names_cache()
+	data_invalidate_cache("sheet_names")
   
         initial_data <- data.frame(
        	  question_id = as.integer(question_ids),
@@ -310,7 +331,7 @@ data_delete_user_worksheet <- function(username) {
 
       if (sheet_name %in% existing_sheets) {
         sheet_delete(DATA$SHEETS$SCORES, sheet = sheet_name)
-	data_invalidate_sheet_names_cache()
+	data_invalidate_cache("sheet_names")
         return(paste("User worksheet deleted:", sheet_name))
       } else {
         return(paste("User worksheet not found (already deleted):", sheet_name))

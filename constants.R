@@ -41,5 +41,8 @@ CACHE <- list(
   ENABLED = TRUE,
   SHEET_NAMES = list(
     TTL = 300
+  ),
+  USERS_META = list(
+    TTL = 300
   )
 )

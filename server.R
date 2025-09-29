@@ -13,10 +13,15 @@ shinyServer(function(input, output, session){
   # Data initialization, error handling, and state setup
   # =================================================
   
-  # Global cache initialization (must be before data initialization)
+  # Global cache initialization 
   if (!exists("app_global_cache", envir = .GlobalEnv)) {
-    assign("app_global_cache", reactiveValues(
+    assign("app_global_cache", list(
       sheet_names = list(
+	data = NULL,
+	timestamp = NULL,
+	is_valid = FALSE
+      ),
+      users_meta = list(
 	data = NULL,
 	timestamp = NULL,
 	is_valid = FALSE
