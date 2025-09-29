@@ -16,6 +16,51 @@ if (!auth_result$success) {
 }
 
 # =============================
+# Cache Functions
+# =============================
+
+data_get_cached_sheet_names <- function() {
+  if (!CACHE$ENABLED) {
+    return(sheet_names(DATA$SHEETS$SCORES))
+  }
+
+  cache <- get("app_global_cache", envir = .GlobalEnv)
+  current_time <- Sys.time()
+
+  if (!is.null(cache$sheet_names$data) &&
+      !is.null(cache$sheet_names$timestamp) &&
+      difftime(current_time, cache$sheet_names$timestamp, units = "secs") < CACHE$SHEET_NAMES$TTL) {
+    return(cache$sheet_names$data)
+  }
+
+
+  tryCatch({
+    result <- sheet_names(DATA$SHEETS$SCORES)
+    cache$sheet_names$data <- result
+    cache$sheet_names$timestamp <- current_time
+    cache$sheet_names$is_valid <- TRUE
+    return(result)
+  }, error = function(e) {
+    if (!is.null(cache$sheet_names$data)) {
+      warning("API call failed, using cached data: ", e$message)
+      return(cache$sheet_names$data)
+    }
+    stop(e)
+  })
+}
+
+data_invalidate_sheet_names_cache <- function() {
+  if (!CACHE$ENABLED) return()
+
+  cache <- get("app_global_cache", envir = .GlobalEnv)
+  cache$sheet_names$data <- NULL
+  cache$sheet_names$timestamp <- NULL
+  cache$sheet_names$is_valid <- FALSE
+}
+
+
+
+# =============================
 # Core File Operations
 # =============================
 
@@ -27,7 +72,7 @@ data_read_user_score <- function(username, qa_data) {
 	return(setNames(rep(0L, qa_count), as.character(1:qa_count)))
       }
       sheet_name <- paste0("user_", username)
-      existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+      existing_sheets <- data_get_cached_sheet_names()
 
       if (!(sheet_name %in% existing_sheets)) {
 	return(setNames(rep(0L, qa_count), as.character(1:qa_count)))
@@ -203,10 +248,11 @@ data_ensure_user_worksheet <- function(username, question_ids) {
   utils_safe_execute(
     operation = function() {
       sheet_name <- paste0("user_", username)
-      existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+      existing_sheets <- data_get_cached_sheet_names()
 
       if (!(sheet_name %in% existing_sheets)) {
         sheet_add(DATA$SHEETS$SCORES, sheet = sheet_name)
+	data_invalidate_sheet_names_cache()
   
         initial_data <- data.frame(
        	  question_id = as.integer(question_ids),
@@ -260,10 +306,11 @@ data_delete_user_worksheet <- function(username) {
     operation = function() {
       
       sheet_name <- paste0("user_", username)
-      existing_sheets <- sheet_names(DATA$SHEETS$SCORES)
+      existing_sheets <- data_get_cached_sheet_names()
 
       if (sheet_name %in% existing_sheets) {
         sheet_delete(DATA$SHEETS$SCORES, sheet = sheet_name)
+	data_invalidate_sheet_names_cache()
         return(paste("User worksheet deleted:", sheet_name))
       } else {
         return(paste("User worksheet not found (already deleted):", sheet_name))

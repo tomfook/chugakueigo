@@ -36,3 +36,10 @@ ADMIN <- list(
   SALT = "3246807a6f37be90",
   HASH_ALGORITHM = "sha256"
 )
+
+CACHE <- list(
+  ENABLED = TRUE,
+  SHEET_NAMES = list(
+    TTL = 300
+  )
+)

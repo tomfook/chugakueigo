@@ -12,6 +12,17 @@ shinyServer(function(input, output, session){
   # =============== INITIALIZATION ==================
   # Data initialization, error handling, and state setup
   # =================================================
+  
+  # Global cache initialization (must be before data initialization)
+  if (!exists("app_global_cache", envir = .GlobalEnv)) {
+    assign("app_global_cache", reactiveValues(
+      sheet_names = list(
+	data = NULL,
+	timestamp = NULL,
+	is_valid = FALSE
+      )
+    ), envir = .GlobalEnv)
+  }
 
   # Initialize core data
   init_result <- ui_with_initialization_progress(function() {data_initialize()})
