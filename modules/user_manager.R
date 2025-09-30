@@ -32,72 +32,36 @@ user_validate_deletion <- function(selected_user, current_user) {
   return(list(valid = TRUE, message = "", type = ""))
 }
 
-user_create_scores <- function(user_state, username, question_count){
-  current_score <- user_state$all_user_scores
-  user_names <- user_state$user_names
-  if (username %in% user_names) {
-    return(list(success = FALSE, message = "Your name has been already registered."))
-  }
-
-  updated_scores <- current_score
-  updated_scores[[username]] <- rep(0L, question_count)
-
-  return(list(
-    success = TRUE,
-    updated_scores = updated_scores,
-    updated_user_names = c(user_state$user_names, username),
-    message = paste("User", username, "was added.")
-  ))
-}
-user_add_new <- function(user_state, username, qa_count) {
+user_add_new <- function(user_state, username) {
   validation <- user_validate_username(username)
   if (!validation$valid) {
     return(list(success = FALSE, message = validation$message))
   }
 
-  result <- user_create_scores(user_state, username, qa_count)
-  if (!result$success) {
-    return(result)
+  user_names <- user_state$user_names
+  if (username %in% user_names) {
+    return(list(success = FALSE, message = "Your name has been already registered."))
   }
 
-  user_state$all_user_scores <- result$updated_scores
-  user_state$user_names <- result$updated_user_names
+  user_state$user_names <- c(user_state$user_names, username)
 
-  return(list(success = TRUE, message = result$message))
+  return(list(success = TRUE, message = paste("User", username, "was added.")))
 }
 
-user_remove_from_scores <- function(user_state, username){
-  current_scores <- user_state$all_user_scores
+user_remove <- function(username, user_state) {
   user_names <- user_state$user_names
+
   if (username == APP$DEFAULTS$USER) {
-      return(list(success = FALSE, message = "Cannot remove guest user."))
+    return(list(success = FALSE, message = "Cannot remove guest user."))
   }
 
   if (!(username %in% user_names)) {
     return(list(success = FALSE, message = "User not found."))
   }
 
-  updated_scores <- current_scores
-  updated_scores[[username]] <- NULL
-
-  return(list(
-    success = TRUE,
-    updated_scores = updated_scores,
-    updated_user_names = user_names[user_names != username],
-    message = paste("User", username, "was permanently removed.")
-  ))
-}
-user_remove <- function(username, user_state) {
-  result <- user_remove_from_scores(user_state, username)
-  if (!result$success) {
-    return(result)
-  }
-
   tryCatch({
-    user_state$all_user_scores <- result$updated_scores
-    user_state$user_names <- result$updated_user_names
-
-    return(list(success = TRUE, message = result$message))
+    user_state$user_names <- user_names[user_names != username]
+    return(list(success = TRUE, message = paste("User", username, "was permanently removed.")))
   }, error = function(e) {
     return(list(success = FALSE, message = paste("Error removing user:", e$message)))
   })

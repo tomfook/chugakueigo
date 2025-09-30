@@ -101,7 +101,7 @@ shinyServer(function(input, output, session){
     results <- ui_with_user_add_progress(
       input$textinp.useradd,
       list(
-	score_operation = function() user_add_new(session$userData$user_state, input$textinp.useradd, qa_count),
+	score_operation = function() user_add_new(session$userData$user_state, input$textinp.useradd),
 	meta_operation = function() data_add_user_to_meta(input$textinp.useradd),
 	worksheet_operation = function() data_ensure_user_worksheet(input$textinp.useradd, qa_data$question_id)
 	)
