@@ -1,7 +1,6 @@
 library(shiny) 
 library(dplyr)
 source("modules/data_manager.R")
-source("modules/user_manager.R")
 source("modules/learning_engine.R")
 source("modules/ui_helpers.R")
 source("modules/state_manager.R")
@@ -98,23 +97,40 @@ shinyServer(function(input, output, session){
       need(!session$userData$user_state$app_error, "Data error: Cannot add user - restart app")
     )
 
+    username <- input$textinp.useradd
+
+    if (is.null(username) || username == "" || trimws(username) == "") {
+      showNotification("Username cannot be empty.", type = "error")
+      return()
+    }
+    if (nchar(username) > 50) {
+      showNotification("Username too long (max 50 characters).", type = "error")
+      return()
+    }
+    if (grepl("[^a-zA-Z0-9_-]", username)) {
+      showNotification("Username can only contain letters, numbers, underscore, and hyphen.", type = "error")
+      return()
+    }
+    if (username == APP$DEFAULTS$USER) {
+      showNotification("Username 'guest' is reserved.", type = "error")
+      return()
+    }
+    if (username %in% session$userData$user_state$user_names) {
+      showNotification("Your name has been already registered.", type = "warning")
+      return()
+    }
+
     results <- ui_with_user_add_progress(
-      input$textinp.useradd,
+      username,
       list(
-	score_operation = function() user_add_new(session$userData$user_state, input$textinp.useradd),
-	meta_operation = function() data_add_user_to_meta(input$textinp.useradd),
-	worksheet_operation = function() data_ensure_user_worksheet(input$textinp.useradd, qa_data$question_id)
+	meta_operation = function() data_add_user_to_meta(username),
+	worksheet_operation = function() data_ensure_user_worksheet(username, qa_data$question_id)
 	)
     )
 
-    if (results$score$success) {
-      if (!is.null(results$meta) && !results$meta$success) {
-	showNotification(
-	  paste("Warning: User added to scores but failed to add to users_meta:", results$meta$message),
-	  type = "warning",
-	  duration = 10
-	)
-      }
+    if (results$meta$success) {
+      session$userData$user_state$user_names <- c(session$userData$user_state$user_names, username)
+
       if (!is.null(results$worksheet) && !results$worksheet$success) {
 	showNotification(
 	  paste("Warning: User added but failed to create worksheet:", results$worksheet$message),
@@ -122,11 +138,9 @@ shinyServer(function(input, output, session){
 	  duration = 10
 	)
       }
-    }
-    ui_show_result(results$score)
-    if (results$score$success) {
       updateTextInput(session, "textinp.useradd", value = "")
-    }
+    } 
+    ui_show_result(results$meta)
   })
 
   # User deletion
@@ -138,9 +152,12 @@ shinyServer(function(input, output, session){
     )
 
     selected_user <- input$select.userdelete
-    validation <- user_validate_deletion(selected_user, input$select.user)
-    if (!validation$valid) {
-      showNotification(validation$message, type = validation$type)
+    if (is.null(selected_user) || selected_user == "No users to delete"){
+      showNotification("No user selected for deletion.", type = "warning")
+      return()
+    }
+    if (selected_user == input$select.user) {
+      showNotification("Cannot delete currently selected user. Please switch to another user first.", type = "warning")
       return()
     }
 
@@ -168,24 +185,22 @@ shinyServer(function(input, output, session){
       return()
     }
     selected_user <- input$select.userdelete
-    score_result <- user_remove(selected_user, session$userData$user_state)
-    if (score_result$success) {
-      meta_result <- data_remove_user_from_meta(selected_user)
+    meta_result <- data_remove_user_from_meta(selected_user)
+    if (meta_result$success) {
       worksheet_result <- data_delete_user_worksheet(selected_user)
 
-      if (!meta_result$success) {
+      session$userData$user_state$user_names <- session$userData$user_state$user_names[session$userData$user_state$user_names != selected_user]
+
+      if (!worksheet_result$success) {
 	showNotification(
-	  paste("Warning: User removed from scores but failed to remove from users_meta:", meta_result$message),
+	  paste("Warning: User removed but failed to delete worksheet:", worksheet_result$message),
 	  type = "warning",
 	  duration = 10
 	)
       }
-      if (!worksheet_result$success) {
-	showNotification(paste("Warning: User removed but failed to delete worksheet:", worksheet_result$message), type = "warning", duration = 10)
-      }
     }
 
-    ui_show_result(score_result)
+    ui_show_result(meta_result)
     removeModal()
   })
 
