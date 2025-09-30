@@ -40,53 +40,77 @@ storage_setup_authentication <- function() {
 
 storage_safe_write_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
   for (attempt in 1:max_retries) {
-    tryCatch({
+    result <- tryCatch({
       sheet_write(data, ss = ss, sheet = sheet)
-      return(list(
+      list(
 	success = TRUE,
-	message = paste("Write successful on attempt", attempt),
-	retry_count = attempt
-      ))
+	data = NULL,
+	message = paste("Write successful on attempt", attempt)
+      )
     }, error = function(e) {
       error_msg <- toString(e$message)
       is_retryable <- grepl("timeout|429|5[0-9][0-9]|network|connection|quota", error_msg, ignore.case = TRUE)
 
       if(!is_retryable || attempt == max_retries) {
-	return(list(
+	list(
 	  success = FALSE,
-	  message = paste("Write failed after", attempt, "attempts:", error_msg),
-	  retry_count = attempt
-	))
+	  data = NULL,
+	  message = paste("Write failed after", attempt, "attempts:", error_msg)
+	)
+      } else {
+	NULL # Continue retry loop
       }
-
-      delay <- base_delay * (2 ^ (attempt -1))
-      Sys.sleep(delay)
     })
+
+    if (!is.null(result)) {
+      return(result)
+    }
+
+    delay <- base_delay * (2 ^ (attempt -1))
+    Sys.sleep(delay)
   }
+
+  return(list(
+    success = FALSE,
+    data = NULL,
+    message = "Write failed: Maximum retries exceeded"
+  ))
 }
 
 storage_safe_append_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
   for (attempt in 1:max_retries) {
-    tryCatch({
+    result <- tryCatch({
       sheet_append(ss, data, sheet = sheet)
-      return(list(
+      list(
 	success = TRUE,
-	message = paste("Append successful on attempt", attempt),
-	retry_count = attempt
-      ))
+	data = NULL,
+	message = paste("Append successful on attempt", attempt)
+      )
     }, error = function(e) {
       error_msg <- toString(e$message)
       is_retryable <- grepl("timeout|429|5[0-9][0-9]|network|connection|quota", error_msg, ignore.case = TRUE)
       if(!is_retryable || attempt == max_retries) {
-	return(list(
+	list(
 	  success = FALSE,
-	  message = paste("Append failed after", attempt, "attempts:", error_msg),
-	  retry_count = attempt
-	))
+	  data = NULL,
+	  message = paste("Append failed after", attempt, "attempts:", error_msg)
+	)
+      } else {
+	NULL
       }
-
-      delay <- base_delay * (2 ^ (attempt -1))
-      Sys.sleep(delay)
     })
+
+    if (!is.null(result)) {
+      return(result)
+    }
+
+    delay <- base_delay * (2 ^ (attempt -1))
+    Sys.sleep(delay)
   }
+
+  return(list(
+    success = FALSE,
+    data = NULL,
+    message = "Append failed: Maximum retries exceeded"
+  ))
 }
