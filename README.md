@@ -48,8 +48,8 @@ ChugakuEigo (中学英語) is a Shiny-based adaptive language learning applicati
 - **JSON credentials**: Service account key management
 
 ### Development Tools
-- **Modular Architecture**: Organized into specialized modules (data_manager.R, user_manager.R, etc.)
-- **Namespaced Functions**: Consistent function naming conventions (data_*, user_*, learning_*)
+- **Modular Architecture**: Organized into specialized modules (data_manager.R, learning_engine.R, ui_helpers.R, etc.)
+- **Namespaced Functions**: Consistent function naming conventions (data_*, learning_*, ui_*, state_*)
 - **Error Handling**: Standardized error response format across modules
 
 ## Data Flow
@@ -61,8 +61,8 @@ graph TD
     C -->|Load Questions| D[qlist.csv]
     C -->|Load Scores| E[Google Sheets]
 
-    B -->|User Selection| F[User Manager]
-    F -->|Validate| G[User State]
+    B -->|User Selection| F[Server.R User Logic]
+    F -->|Update| G[User State]
 
     B -->|Learning Session| H[Learning Engine]
     H -->|Calculate Probability| I[Question Selection]
