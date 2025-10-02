@@ -93,9 +93,10 @@ shinyServer(function(input, output, session){
 
   # User addition
   observeEvent(input$action.useradd,{
-    validate(
-      need(!session$userData$user_state$app_error, "Data error: Cannot add user - restart app")
-    )
+    if (session$userData$user_state$app_error) {
+      showNotification("Data error: Cannot add user - restart app", type = "error", duration = NULL)
+      return()
+    }
 
     username <- input$textinp.useradd
 
@@ -147,9 +148,10 @@ shinyServer(function(input, output, session){
   ui_observe_delete_choices(session, session$userData$user_state)
 
   observeEvent(input$action.userdelete, {
-    validate(
-      need(!session$userData$user_state$app_error, "Data error: Cannot delete user - restart app")
-    )
+    if (session$userData$user_state$app_error) {
+      showNotification("Data error: Cannot delete user - restart app", type = "error", duration = NULL)
+      return()
+    }
 
     selected_user <- input$select.userdelete
     if (is.null(selected_user) || selected_user == "No users to delete"){
@@ -218,9 +220,11 @@ shinyServer(function(input, output, session){
 
   # Learning session controls
   observeEvent(input$action.start,{ 
-    validate(
-      need(!session$userData$user_state$app_error, "Data error: Cannot start learning - restart app")
-    )
+    if (session$userData$user_state$app_error) {
+      showNotification("Data error: Cannot start learning - restart app", type = "error", duration = NULL)
+      return()
+    }
+
     session$userData$learning_state <- learning_start_session(session$userData$learning_state, qa_data, session$userData$config_state)
   })
   observeEvent(input$action.answer,{
@@ -249,9 +253,11 @@ shinyServer(function(input, output, session){
 
   # Save user score
   observeEvent(input$action.save,{ 
-    validate(
-      need(!session$userData$user_state$app_error, "Data error: Cannot save score - restart app")
-    )
+    if (session$userData$user_state$app_error) {
+      showNotification("Data error: Cannot save score - restart app", type = "error", duration = NULL)
+      return()
+    }
+
     effective_scores <- session$userData$user_state$score + session$userData$learning_state$current_score
 
     result <- ui_with_save_progress(function() {
