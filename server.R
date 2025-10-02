@@ -104,16 +104,16 @@ shinyServer(function(input, output, session){
       showNotification("Username cannot be empty.", type = "error")
       return()
     }
-    if (nchar(username) > 50) {
-      showNotification("Username too long (max 50 characters).", type = "error")
+    if (nchar(username) > APP$USERNAME$MAX_LENGTH) {
+      showNotification(paste0("Username too long (max ", APP$USERNAME$MAX_LENGTH, " characters)."), type = "error")
       return()
     }
-    if (grepl("[^a-zA-Z0-9_-]", username)) {
-      showNotification("Username can only contain letters, numbers, underscore, and hyphen.", type = "error")
+    if (!grepl(APP$USERNAME$PATTERN, username)) {
+      showNotification(paste0("Username can only contain ", APP$USERNAME$ALLOWED_CHARS_DESC, "."), type = "error")
       return()
     }
     if (username == APP$DEFAULTS$USER) {
-      showNotification("Username 'guest' is reserved.", type = "error")
+      showNotification(paste0("Username '", APP$DEFAULTS$USER, "' is reserved."), type = "error")
       return()
     }
     if (username %in% session$userData$user_state$user_names) {

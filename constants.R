@@ -1,6 +1,11 @@
 APP <- list(
   DEFAULTS = list(
     USER = "guest"
+  ),
+  USERNAME = list(
+    MAX_LENGTH = 50L,
+    PATTERN = "^[a-zA-Z0-9_-]+$",
+    ALLOWED_CHARS_DESC = "letters, numbers, underscore, and hyphen"
   )
 )
 
