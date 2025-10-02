@@ -9,7 +9,7 @@ source("shuffle_config.R")
 # =================
 # QUESTION SELECTION FUNCTIONS
 # =================
-learning_select_next_question <- function(qa_data, learning_state) {
+learning_select_next_question <- function(learning_state, qa_data) {
   question_index <- sample(
     length(learning_state$probabilities),
     1,
@@ -29,7 +29,7 @@ learning_select_next_question <- function(qa_data, learning_state) {
 # LEARNING SESSION FUNCTIONS
 # =================
 learning_new_question <- function(learning_state, qa_data, config_state) {
-  next_q <- learning_select_next_question(qa_data, learning_state)
+  next_q <- learning_select_next_question(learning_state, qa_data)
   learning_state$question_id <- next_q$question_id
   learning_state$question <- next_q$question
   learning_state$correct_answer <- next_q$answer
