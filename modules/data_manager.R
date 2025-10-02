@@ -170,7 +170,7 @@ data_initialize <- function() {
 # Data Persistence Operations
 # ===============================
 
-data_save_user_score <- function(username, current_user, user_scores, qa_count) {
+data_save_user_score <- function(username, current_user, user_scores) {
   utils_safe_execute(
     operation = function() {
       if (username != current_user) {

@@ -264,8 +264,7 @@ shinyServer(function(input, output, session){
       data_save_user_score(
         username = input$select.user,
         current_user = session$userData$user_state$user,
-        user_scores = effective_scores,
-        qa_count = qa_count
+        user_scores = effective_scores
         )
       })
 
