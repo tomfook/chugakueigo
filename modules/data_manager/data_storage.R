@@ -38,62 +38,24 @@ storage_setup_authentication <- function() {
 # Network Error Retry Functions
 # ===========================
 
-storage_safe_write_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
+storage_safe_operation_with_retry <- function(operation, operation_name, max_retries = 3, base_delay = 1) {
   for (attempt in 1:max_retries) {
     result <- tryCatch({
-      sheet_write(data, ss = ss, sheet = sheet)
+      operation()
       list(
 	success = TRUE,
 	data = NULL,
-	message = paste("Write successful on attempt", attempt)
+	message = paste(operation_name, "successful on attempt", attempt)
       )
     }, error = function(e) {
-      error_msg <- toString(e$message)
+      error_msg = toString(e$message)
       is_retryable <- grepl("timeout|429|5[0-9][0-9]|network|connection|quota", error_msg, ignore.case = TRUE)
 
-      if(!is_retryable || attempt == max_retries) {
+      if (!is_retryable || attempt == max_retries) {
 	list(
 	  success = FALSE,
 	  data = NULL,
-	  message = paste("Write failed after", attempt, "attempts:", error_msg)
-	)
-      } else {
-	NULL # Continue retry loop
-      }
-    })
-
-    if (!is.null(result)) {
-      return(result)
-    }
-
-    delay <- base_delay * (2 ^ (attempt -1))
-    Sys.sleep(delay)
-  }
-
-  return(list(
-    success = FALSE,
-    data = NULL,
-    message = "Write failed: Maximum retries exceeded"
-  ))
-}
-
-storage_safe_append_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
-  for (attempt in 1:max_retries) {
-    result <- tryCatch({
-      sheet_append(ss, data, sheet = sheet)
-      list(
-	success = TRUE,
-	data = NULL,
-	message = paste("Append successful on attempt", attempt)
-      )
-    }, error = function(e) {
-      error_msg <- toString(e$message)
-      is_retryable <- grepl("timeout|429|5[0-9][0-9]|network|connection|quota", error_msg, ignore.case = TRUE)
-      if(!is_retryable || attempt == max_retries) {
-	list(
-	  success = FALSE,
-	  data = NULL,
-	  message = paste("Append failed after", attempt, "attempts:", error_msg)
+	  message = paste(operation_name, "failed after", attempt, "attempts:", error_msg)
 	)
       } else {
 	NULL
@@ -104,13 +66,32 @@ storage_safe_append_with_retry <- function(data, ss, sheet, max_retries = 3, bas
       return(result)
     }
 
-    delay <- base_delay * (2 ^ (attempt -1))
+    delay <- base_delay * (2 ^ (attempt -1 ))
     Sys.sleep(delay)
   }
 
   return(list(
     success = FALSE,
     data = NULL,
-    message = "Append failed: Maximum retries exceeded"
+    message = paste(operation_name, "failed: Maximum retries exceeded")
   ))
 }
+
+storage_safe_write_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
+  storage_safe_operation_with_retry(
+    operation = function() { sheet_write(data, ss = ss, sheet = sheet) },
+    operation_name = "Write",
+    max_retries = max_retries,
+    base_delay = base_delay
+  )
+}
+
+storage_safe_append_with_retry <- function(data, ss, sheet, max_retries = 3, base_delay = 1) {
+  storage_safe_operation_with_retry(
+    operation = function() { sheet_append(ss, data, sheet = sheet)},
+    operation_name = "Append",
+    max_retries = max_retries,
+    base_delay = base_delay
+  )
+}
+
