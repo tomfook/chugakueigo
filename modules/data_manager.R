@@ -139,7 +139,8 @@ data_initialize <- function() {
   utils_safe_execute(
     operation = function() {
       qa_data <- read.csv(DATA$PATHS$QUESTIONS, comment ="#", stringsAsFactors = FALSE) %>%
-	filter(question != "", answer != "")
+	mutate(is_active = if("is_active" %in% names(.)) is_active else TRUE) %>%
+	filter(question != "", answer != "", is_active == TRUE)
       qa_count <- nrow(qa_data)
       if (qa_count == 0){
 	stop("No valid questions found in qlist.csv")
