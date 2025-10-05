@@ -12,11 +12,13 @@ shinyUI(fluidPage(
       textOutput("welcome"),
       p(),
       helpText("----How to use----"),
-      helpText("1. Select username and Start"),
-      helpText("2. On the main tab, see Japanese sentence and translate it."),
-      helpText("3. If you could do instantly, press 'OK'. Otherwise 'NG'"),
-      helpText("4. Repeat 2 and 3."),
-      helpText("5. When you finish learning, save your score by the button.")
+      helpText("1. Select username (or add new user in 'manage' tab)"),
+      helpText("2. Press 'Start Learning' button"),
+      helpText("3. See Japanese sentence -> try to translate mentally"),
+      helpText("4. Press 'Show Answer' to check the correct English answer"),
+      helpText("5. Press 'OK' if correct, 'NG' if incorrect"),
+      helpText("6. Repeat - the app prioritizes your weak questions"),
+      helpText("7. Press 'Save Score' when done to save your progress")
     ),
     mainPanel(
       tabsetPanel(type = "tabs",
