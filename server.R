@@ -73,6 +73,7 @@ shinyServer(function(input, output, session){
   output$html.slider.qrange <- ui_render_slider_qrange(qa_count)
   output$html.action.start <- ui_render_action_start(session$userData$learning_state$start, app_error)
   output$html.action.save <- ui_render_action_save(!save_needed(), session$userData$user_state$app_error)
+  output$html.action.delete <- ui_render_action_delete(session$userData$user_state, app_error)
 
   # User selection observer
   ui_observe_user_selection(session, session$userData$user_state)
@@ -154,7 +155,7 @@ shinyServer(function(input, output, session){
     }
 
     selected_user <- input$select.userdelete
-    if (is.null(selected_user) || selected_user == "No users to delete"){
+    if (is.null(selected_user)) {
       showNotification("No user selected for deletion.", type = "warning")
       return()
     }

@@ -53,7 +53,7 @@ shinyUI(fluidPage(
 	  br(), br(),
 
 	  selectInput("select.userdelete", label = "Select User to Delete", choices = NULL),
-	  actionButton("action.userdelete", label = "Delete User", class = "btn-danger")
+	  uiOutput("html.action.delete")
         ),
         tabPanel("history", 
           h3("History"), 

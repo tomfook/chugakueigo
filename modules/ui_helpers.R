@@ -141,6 +141,36 @@ ui_render_action_save <- function(scores_match, has_error = FALSE) {
   })
 }
 
+ui_render_action_delete <- function(user_state, has_error = FALSE) {
+  renderUI({
+    deletable_users <- user_state$user_names[user_state$user_names != APP$DEFAULTS$USER]
+    has_deletable_users <- length(deletable_users) > 0
+
+    if (has_error) {
+      actionButton(
+	"action.userdelete",
+	label = "Delete User (Disabled)",
+	class = "btn-danger text-muted",
+	disabled = TRUE
+      )
+    } else if (!has_deletable_users) {
+      actionButton(
+	"action.userdelete",
+	label = "Delete User",
+	class = "btn-danger text-muted",
+	disabled = TRUE
+      )
+    } else {
+      actionButton(
+	"action.userdelete",
+	label = "Delete User",
+	class ="btn-danger"
+      )
+    }
+  })
+}
+
+
 # ================================
 # Observer Functions
 # Reactive observer functions for UI updates
