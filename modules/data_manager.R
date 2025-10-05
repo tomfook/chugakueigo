@@ -33,18 +33,22 @@ data_get_cached_data <- function(cache_key, ttl_seconds, data_fetcher) {
     }
     cache <- get("app_global_cache", envir = .GlobalEnv)
     current_time <- Sys.time()
-  
-    if (!is.null(cache[[cache_key]]$data) &&
-        !is.null(cache[[cache_key]]$timestamp) &&
-        difftime(current_time, cache[[cache_key]]$timestamp, units = "secs") < ttl_seconds) {
-      return(cache[[cache_key]]$data)
+
+    cached_entry <- .subset2(cache, cache_key)
+    if (!is.null(cached_entry) &&
+	!is.null(cached_entry$data) &&
+	!is.null(cached_entry$timestamp) &&
+	difftime(current_time, cached_entry$timestamp, units = "secs") < ttl_seconds) {
+      return(cached_entry$data)
     }
-  
+
     result <- data_fetcher()
 
-    cache[[cache_key]]$data <- result
-    cache[[cache_key]]$timestamp <- current_time
-    cache[[cache_key]]$is_valid <- TRUE
+    cached_entry$data <- result
+    cached_entry$timestamp <- current_time
+    cached_entry$is_valid <- TRUE
+
+    cache[[cache_key]] <- cached_entry
 
     assign("app_global_cache", cache, envir = .GlobalEnv)
 
