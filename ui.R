@@ -6,8 +6,8 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("select.user", "select your name", choices = c(APP$DEFAULTS$USER), selected = APP$DEFAULTS$USER),
-      actionButton("action.start", label = "Start Learning"), 
-      actionButton("action.save", label = "Save Score"),
+      uiOutput("html.action.start", inline = TRUE),
+      uiOutput("html.action.save", inline = TRUE),
       p(), 
       textOutput("welcome"),
       p(),
@@ -26,10 +26,19 @@ shinyUI(fluidPage(
           h3("Main View"),
           textOutput("about"),
           tableOutput("qanda"),
-          actionButton("action.answer", label = "Show Answer"),
+          actionButton("action.answer",
+	    label = "Show Answer",
+	    title = "Click to reveal the correct English translation"
+	    ),
           br(),
-          actionButton("action.ok", label = "OK"),
-          actionButton("action.ng", label = "NG"),
+          actionButton("action.ok",
+	    label = "OK",
+	    title = "Mark as correct - this question will appear less often"
+	  ),
+          actionButton("action.ng",
+	    label = "NG",
+	    title = "Mark as incorrect - this question will appear more often"
+	  ),
           p()
         ),
         tabPanel("score",

@@ -128,14 +128,22 @@ ui_render_action_start <- function(is_started, has_error = FALSE) {
   })
 }
 
-ui_render_action_save <- function(scores_match, has_error = FALSE) {
+ui_render_action_save <- function(save_needed_reactive, user_state) {
   renderUI({
+    scores_match <- !save_needed_reactive()
+    has_error <- user_state$app_error
     if (has_error) {
-      actionButton("action.save", label = "Save Score (Disabled)",
-		   class = "text-muted", disabled = TRUE
-		   )
+      actionButton("action.save",
+	label = "Save Score (Disabled)",
+	class = "text-muted",
+	disabled = TRUE,
+	title = "Save is disabled due to app error"
+    )
     } else {
-      actionButton("action.save", label = "Save Score", class = if_else(scores_match, "text-muted", "text-dark")
+      actionButton("action.save",
+	label = "Save Score",
+	class = if_else(scores_match, "text-muted", "text-dark"),
+	title = if_else(scores_match, "No new scores to save", "Save your current session progress")
       )
     }
   })
