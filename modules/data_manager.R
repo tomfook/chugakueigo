@@ -129,7 +129,7 @@ data_read_user_score <- function(username, qa_data) {
 
 data_read_users_meta <- function() {
   utils_safe_execute(
-    operation = function() read_sheet(DATA$SHEETS$USERS_META, sheet = "users_meta", col_types = "cDDd"),
+    operation = function() read_sheet(DATA$SHEETS$USERS_META, sheet = "users_meta", col_types = "cDDdiidi"),
     success_message = "Users metadata loaded successfully",
     error_message_prefix = "Error reading users_meta from Google Sheets:"
   )
@@ -216,6 +216,10 @@ data_add_user_to_meta <- function(username) {
         created_date = Sys.time(),
         last_updated = Sys.time(),
         question_count = 0,
+        param_range_min = 1L,
+        param_range_max = NA_integer_,
+        param_prob_base = LEARNING$DEFAULTS$PROBABILITY_BASE,
+        param_zero_limit = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS,
         stringsAsFactors = FALSE
       )
 
