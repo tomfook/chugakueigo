@@ -14,7 +14,9 @@ SHUFFLE_KEYWORDS <- list(
       list(english = c("swimming", "hiking"), japanese = c("水泳", "ハイキング")),
       list(english = c("walking", "exercise"), japanese = c("散歩", "運動")),
       list(english = c("green tea", "black tea"), japanese = c("緑茶", "紅茶")),
-      list(english = c("coffee", "tea"), japanese = c("コーヒー", "お茶")),
+      # NOTE: 単語 "tea" は "green tea"/"black tea"/"lemon tea" の一部にも \btea\b で
+      # マッチし、二重置換で日英ペアが崩れる（紅茶 / black coffee 問題）。
+      # 部分一致衝突を避けるため coffee/tea ペアは無効化している。
       list(english = c("taxi", "bus"), japanese = c("タクシー", "バス")),
       list(english = c("orange juice", "apple juice"), japanese = c("オレンジジュース", "アップルジュース")),
       
