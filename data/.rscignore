@@ -1,0 +1,6 @@
+# .rscignore for data/ — exact-name matches only (rsconnect has no glob support).
+# Only qlist.csv is needed at runtime. Exclude local backups and score data so
+# they are never uploaded (and never overwrite production score data).
+qlist.csv.bak
+qlist.csv.backup.20250924_224501
+score.csv
