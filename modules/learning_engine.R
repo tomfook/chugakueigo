@@ -85,15 +85,27 @@ learning_handle_feedback <- function(learning_state, qa_data, config_state, is_c
 learning_apply_shuffle_keywords <- function(qa_pair, keywords, selection_rate) {
   selected_keywords <- keywords[runif(length(keywords)) < selection_rate]
 
+  # 一意のプレースホルダ。english/japanese いずれの語にも含まれない制御文字列を使う。
+  sentinel <- "SHUFFLE_SWAP"
+
   for (keyword in selected_keywords) {
-    for (direction in c(1, 2)) {
-      pattern <- paste0("\\b", keyword$english[direction], "\\b")
-      if (grepl(pattern, qa_pair$a, ignore.case = FALSE)) {
-	opposite <- if (direction == 1) 2 else 1
-	qa_pair$q <- gsub(keyword$japanese[direction], keyword$japanese[opposite], qa_pair$q, fixed = TRUE)
-	qa_pair$a <- gsub(pattern, keyword$english[opposite], qa_pair$a, ignore.case = FALSE)
-	break
-      }
+    pattern1 <- paste0("\\b", keyword$english[1], "\\b")
+    pattern2 <- paste0("\\b", keyword$english[2], "\\b")
+
+    if (grepl(pattern1, qa_pair$a, ignore.case = FALSE) ||
+        grepl(pattern2, qa_pair$a, ignore.case = FALSE)) {
+      # 真の入れ替え（A<->B）。片方向の gsub だと両語が同居する文で
+      # "Saturday and Sunday" -> "Sunday and Sunday" のように崩れるため、
+      # プレースホルダ経由で双方向にスワップする。
+      a <- gsub(pattern1, sentinel, qa_pair$a, ignore.case = FALSE)
+      a <- gsub(pattern2, keyword$english[1], a, ignore.case = FALSE)
+      a <- gsub(sentinel, keyword$english[2], a, fixed = TRUE)
+      qa_pair$a <- a
+
+      q <- gsub(keyword$japanese[1], sentinel, qa_pair$q, fixed = TRUE)
+      q <- gsub(keyword$japanese[2], keyword$japanese[1], q, fixed = TRUE)
+      q <- gsub(sentinel, keyword$japanese[2], q, fixed = TRUE)
+      qa_pair$q <- q
     }
   }
 
