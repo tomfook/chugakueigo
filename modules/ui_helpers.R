@@ -64,6 +64,15 @@ ui_render_score_weak <- function(qa_data, effective_score_reactive, limit = 5) {
   })
 }
 
+ui_render_grammar_weak <- function(grammar_weak_reactive, limit = 10) {
+  renderTable({
+    validate(
+      need(!is.null(grammar_weak_reactive()), "Loading grammar scores...")
+    )
+    head(grammar_weak_reactive(), limit)
+  })
+}
+
 ui_render_qanda <- function(learning_state) {
   renderTable({
     validate(

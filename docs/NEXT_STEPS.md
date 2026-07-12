@@ -3,6 +3,8 @@
 ## Open items
 
 - Fix README.md: "bcrypt-style hashing" is inaccurate — admin password uses SHA-256 + salt (`constants.R` `ADMIN`)
+- Review auto-generated grammar tags: `data/qlist.csv` `grammar` column was populated by the rule-based classifier in `scripts/tag_grammar.py` (a reviewable draft). Known coarse spots: be動詞主動詞 sometimes falls back to `basic_svo`; present-perfect in questions with intervening words is under-detected; `-ed` adjectives partially stop-listed. Spot-check and correct via the classifier or by editing the column, then re-check the "weak grammar points" dashboard.
+- Consider persisting per-user `grammar_alpha` alongside the other `param_*` columns when issue #14 (user-specific config persistence) resumes — the config knob exists (`config_state$grammar_alpha`) but is session-only for now.
 
 ## Deferred
 

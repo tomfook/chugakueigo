@@ -19,9 +19,11 @@ LICENSE
 # .claude: Claude Code config/skills
 # docs: project documentation
 # knowledge: symlink to an external kaizen knowledge base (must not be deployed)
+# scripts: one-off data-prep tooling (e.g. grammar tagging); not needed at runtime
 .claude
 docs
 knowledge
+scripts
 
 # --- Stray editor/backup files currently present at root ---
 .server.R.swp

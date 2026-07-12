@@ -45,13 +45,17 @@ shinyUI(fluidPage(
           h3("Score"),
           textOutput("score.total"),
           h4("Your low scored questions"),
-          tableOutput("score.weak")
+          tableOutput("score.weak"),
+          h4("Your weak grammar points"),
+          helpText("Average score per grammar (lower = weaker). Reused from your question scores."),
+          tableOutput("score.grammar")
         ),
         tabPanel("setting",
           h3("Setting"),
           htmlOutput("html.slider.qrange"),
 	  numericInput("zero.score.limit", label = h4("Maximum zero-score questions to include"), value = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS, step = 1, min = 1),
-          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = LEARNING$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN)
+          numericInput("prob.base", label = h4("bias to your weakness (1 means unbiased)"), value = LEARNING$DEFAULTS$PROBABILITY_BASE, step = LEARNING$PROBABILITY$STEP, min = LEARNING$PROBABILITY$MIN),
+          sliderInput("grammar.alpha", label = h4("grammar generalization (1 = per-question only, lower = spread across grammar)"), value = LEARNING$DEFAULTS$GRAMMAR_ALPHA, min = LEARNING$GRAMMAR$ALPHA_MIN, max = LEARNING$GRAMMAR$ALPHA_MAX, step = LEARNING$GRAMMAR$ALPHA_STEP)
         ),
         tabPanel("questions",
           h3("Questions"),
