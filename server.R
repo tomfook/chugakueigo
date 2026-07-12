@@ -53,6 +53,10 @@ shinyServer(function(input, output, session){
   qa_count <- nrow(qa_data)
   user_names <- init_result$data$user_names
 
+  # 文法適応: 問題->文法の対応表を一度だけ構築（確率更新のたびに使い回す）。
+  grammar_meta <- learning_build_grammar_meta(qa_data)
+  grammar_list <- init_result$data$grammar_list
+
   # Initialize reactive states
   session$userData$user_state <- state_create_reactive(state_initialize_user(qa_count, user_score, user_names, app_error))
   session$userData$config_state <- state_create_reactive(state_initialize_config(qa_count))
@@ -89,8 +93,8 @@ shinyServer(function(input, output, session){
     session$userData$user_state$score <- user_score_result$data
 
     session$userData$learning_state <- state_reset_learning(session$userData$learning_state)
-    session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score())
-  }) 
+    session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score(), grammar_meta)
+  })
 
   # User addition
   observeEvent(input$action.useradd,{
@@ -215,8 +219,9 @@ shinyServer(function(input, output, session){
   observe({
     session$userData$config_state$prob_base <- input$prob.base
     session$userData$config_state$zero_limit <- input$zero.score.limit
+    session$userData$config_state$grammar_alpha <- input$grammar.alpha
     session$userData$config_state <- state_update_config_range(session$userData$config_state, input$slider.qrange, qa_count)
-    session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score())
+    session$userData$learning_state <- learning_update_probability(session$userData$learning_state, session$userData$config_state, effective_score(), grammar_meta)
   })
 
   # Learning session controls
@@ -290,6 +295,31 @@ shinyServer(function(input, output, session){
   # Score displays
   output$score.total <- ui_render_score_total(effective_score)
   output$score.weak <- ui_render_score_weak(qa_data, effective_score)
+
+  # 文法別の弱点集計（問題単位スコアの平均）。集計は server が担い、UI は描画のみ。
+  grammar_weak <- reactive({
+    gscores <- learning_grammar_scores(effective_score(), grammar_meta)
+    if (length(gscores) == 0) return(NULL)
+
+    df <- data.frame(
+      grammar_id = names(gscores),
+      avg_score = round(as.numeric(gscores), 2),
+      questions = vapply(names(gscores), function(g) length(grammar_meta$members[[g]]), integer(1)),
+      stringsAsFactors = FALSE
+    )
+
+    if (!is.null(grammar_list) && nrow(grammar_list) > 0) {
+      df <- merge(df, grammar_list, by = "grammar_id", all.x = TRUE)
+      df$label[is.na(df$label)] <- df$grammar_id[is.na(df$label)]
+    } else {
+      df$label <- df$grammar_id
+    }
+
+    df <- df[order(df$avg_score), c("label", "avg_score", "questions")]
+    names(df) <- c("Grammar", "Avg score", "Questions")
+    df
+  })
+  output$score.grammar <- ui_render_grammar_weak(grammar_weak)
 
   # Questions table
   output$dt.questions <- ui_render_questions_table(qa_data, effective_score)

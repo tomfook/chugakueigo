@@ -127,6 +127,20 @@ data_read_user_score <- function(username, qa_data) {
   )
 }
 
+data_read_grammar_list <- function() {
+  utils_safe_execute(
+    operation = function() {
+      if (!file.exists(DATA$PATHS$GRAMMAR_LIST)) {
+        return(data.frame(grammar_id = character(0), label = character(0), stringsAsFactors = FALSE))
+      }
+      read.csv(DATA$PATHS$GRAMMAR_LIST, stringsAsFactors = FALSE)
+    },
+    success_message = "Grammar list loaded successfully",
+    error_message_prefix = "Error reading grammar_list, using empty:",
+    fallback_data = data.frame(grammar_id = character(0), label = character(0), stringsAsFactors = FALSE)
+  )
+}
+
 data_read_users_meta <- function() {
   utils_safe_execute(
     operation = function() read_sheet(DATA$SHEETS$USERS_META, sheet = "users_meta", col_types = "cDDdiidi"),
@@ -160,10 +174,14 @@ data_initialize <- function() {
 	stop(paste("Failed to initialize guest score:", guest_score_result$message))
       }
 
+      # 文法ラベル（ダッシュボード表示用）。読めなくても学習は継続できるので致命ではない。
+      grammar_list_result <- data_read_grammar_list()
+
     return(list(
 	qa_data = qa_data,
 	user_score = guest_score_result$data,
-	user_names = users_meta_result$data$username
+	user_names = users_meta_result$data$username,
+	grammar_list = grammar_list_result$data
     ))
     },
     success_message = "Data initialized successfully",

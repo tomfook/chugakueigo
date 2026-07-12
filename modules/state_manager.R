@@ -18,7 +18,8 @@ state_initialize_config <- function(qa_count) {
     range_min = 1L,
     range_max = qa_count,
     prob_base = LEARNING$DEFAULTS$PROBABILITY_BASE,
-    zero_limit = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS
+    zero_limit = LEARNING$DEFAULTS$MAX_ZERO_SCORE_QUESTIONS,
+    grammar_alpha = LEARNING$DEFAULTS$GRAMMAR_ALPHA
   )
 }
 
